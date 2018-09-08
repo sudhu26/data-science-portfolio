@@ -2,6 +2,7 @@ import numpy as np
 
 import seaborn as sns
 import matplotlib.pyplot as plt
+import matplotlib.ticker as tkr
 
 import snsStyle
 
@@ -15,7 +16,7 @@ def addAxisPlotBuffer(ax, x, y):
     ax.set_xlim(xLim[0] - xMargin, xLim[1] + xMargin)
     ax.set_ylim(yLim[0] - yMargin, yLim[1] + yMargin)
 
-def vizSns2dScatter( df, x, y, title):
+def vizSns2dScatter(df, x, y, title):
     g = sns.lmplot(x = x
                   ,y = y
                   ,data = df
@@ -48,4 +49,34 @@ def vizSns2dScatter( df, x, y, title):
     addAxisPlotBuffer(ax = g.ax, x = 0.01, y = 0.01) 
     return g.ax
 
-    
+def vizSns2dHist(x, ylabel, yShift, bins = 20, kde = False, rug = False, yDollars = False):
+    fig = plt.subplots(figsize=(15,8))
+    g = sns.distplot(x
+                    ,bins =bins
+                    ,kde = kde
+                    ,rug = rug
+                    ,color = snsStyle.colTitleGrey)
+    g.set_xlabel(xlabel = '')
+    g.set_ylabel(ylabel = ylabel, labelpad = 25, position = (1.0, yShift))    
+
+    if yDollars:
+        fmt = '${x:,.0f}'    # dollar sign formatting
+        tick = tkr.StrMethodFormatter(fmt)
+        g.yaxis.set_major_formatter(tick)   
+    g.set_xticklabels('')
+    plt.xticks([])
+    plt.tight_layout()
+    return g
+
+def vizSnsHeatmap(df, cols):
+    fig = plt.subplots(figsize=(15,8))
+    corrMatrix = df.corr()
+    corrMatrix = corrMatrix.loc[cols][cols]
+
+    mask = np.zeros_like(corrMatrix)
+    mask[np.triu_indices_from(mask)] = True
+
+    sns.heatmap(corrMatrix
+               ,cmap = 'Greys'
+               ,mask = mask
+               ,square = True)
