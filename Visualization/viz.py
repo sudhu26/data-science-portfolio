@@ -16,7 +16,7 @@ def addAxisPlotBuffer(ax, x, y):
     ax.set_xlim(xLim[0] - xMargin, xLim[1] + xMargin)
     ax.set_ylim(yLim[0] - yMargin, yLim[1] + yMargin)
 
-def vizSns2dScatter(df, x, y, title):
+def vizSns2dScatter(df, x, y, yShift, title, chartSize = 15, yDollars = False):
     g = sns.lmplot(x = x
                   ,y = y
                   ,data = df
@@ -30,8 +30,8 @@ def vizSns2dScatter(df, x, y, title):
                     )
     g.ax.set_title(title, color = snsStyle.colTitleGrey, loc = 'left', pad = 50)
     g.ax.set_xlabel(xlabel = x, labelpad = 25, position = (0.5, 0.5))
-    g.ax.set_ylabel(ylabel = y, labelpad = 25, position = (1.0, 0.875))
-    g.fig.set_size_inches(20, 12)
+    g.ax.set_ylabel(ylabel = y, labelpad = 25, position = (1.0, yShift))
+    g.fig.set_size_inches(chartSize, chartSize * 0.6)
     
     xMin = round(np.min(df[x]), 5); xMax = round(np.max(df[x]), 5)
     xChange = (xMax - xMin) / xMax
@@ -44,13 +44,20 @@ def vizSns2dScatter(df, x, y, title):
     yMax = yMax + yMax * 0.1
     plt.axis([xMin, xMax, yMin, yMax])    
     
+    if yDollars:
+        fmt = '${x:,.0f}'    # dollar sign formatting
+        tick = tkr.StrMethodFormatter(fmt)
+        g.ax.yaxis.set_major_formatter(tick)
+        #g.yaxis.set_major_formatter(tick)
+        
+
     plt.tight_layout()
 
     addAxisPlotBuffer(ax = g.ax, x = 0.01, y = 0.01) 
     return g.ax
 
-def vizSns2dHist(x, ylabel, yShift, bins = 20, kde = False, rug = False, yDollars = False):
-    fig = plt.subplots(figsize=(15,8))
+def vizSns2dHist(x, ylabel, yShift, bins = 20, kde = False, rug = False, chartSize = 15, yDollars = False):
+    fig = plt.subplots(figsize = (chartSize, chartSize * 0.6))
     g = sns.distplot(x
                     ,bins =bins
                     ,kde = kde
@@ -68,8 +75,8 @@ def vizSns2dHist(x, ylabel, yShift, bins = 20, kde = False, rug = False, yDollar
     plt.tight_layout()
     return g
 
-def vizSnsHeatmap(df, cols):
-    fig = plt.subplots(figsize=(15,8))
+def vizSnsHeatmap(df, cols, chartSize):
+    fig = plt.subplots(figsize = (chartSize, chartSize))
     corrMatrix = df.corr()
     corrMatrix = corrMatrix.loc[cols][cols]
 
@@ -80,3 +87,6 @@ def vizSnsHeatmap(df, cols):
                ,cmap = 'Greys'
                ,mask = mask
                ,square = True)
+
+def func():
+    pass
