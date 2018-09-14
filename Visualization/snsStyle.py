@@ -12,8 +12,8 @@ rcGrey = {'axes.titlesize' : 50.0
      ,'axes.grid': False
      ,'axes.axisbelow': True
      ,'axes.labelcolor': colTitleGrey
-     ,'axes.spines.left': False
-     ,'axes.spines.bottom': False
+     ,'axes.spines.left': True
+     ,'axes.spines.bottom': True
      ,'axes.spines.right': False
      ,'axes.spines.top': False
            
