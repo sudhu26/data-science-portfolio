@@ -5,25 +5,45 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 import matplotlib.lines as Line2D
 
-import snsStyle
+import vizStyle
 import vizUtil
 
-def viz2dScatter(df, x, y, targetCol = None, targetLabels = None, chartSize = 15, colorOptions = vizUtil.colorOptions, yShift = 0.8, title = '', xUnits = None, yUnits = None):
+def viz2dScatter(df, x, y, targetCol = None, targetLabels = None, chartProp = 15, yShift = 0.8, title = '', xUnits = None, yUnits = None, orientation = None, ax = None):
+    """
+    Creates 2-dimensional scatter plot. If targetCol is set to None, scatterplot is monochromatic. If targetCol is set to a specific column, 
+    scatter plot takes on a hue based on the unique categories in targetCol
+
+    Parameters:
+        df = Pandas DataFrame. Select columns get converted to numpy arrays.
+        x = str, column name of DataFrame. x-axis value.
+        y = str, column name of DataFrame. y-axis value.
+        targetCol (optional) = str, column name of DataFrame. Column used for differentiating x and y values by color.
+        targetLabels (optional) = list, contains category labels of unique values in targetCol. Used for creating legend labels.
+        chartProp (optional) = Float. Controls proportionality of chart, ticklabels, tick marks, axis labels and title.
+        yShift (optional) = Float. Position y-axis label up/down axis.
+        title (optional) = str, chart title.
+        xUnits (optional) = str. '$' displays tick labels in dollars, '%' displays tick labels as percentages.
+        yUnits (optional) = str. '$' displays tick labels in dollars, '%' displays tick labels as percentages.
+        orientation = str. None provides wide orientation, 'tall' provides tall orientation.
+    """    
     # Create plotting objects
+
+    chartWidth = chartProp * .4 if orientation == 'tall' else chartProp
+    chartHeight = chartProp * .6 if orientation == 'tall' else chartProp * .5
+
     fig, ax = plt.subplots()
-    fig.set_size_inches(chartSize, chartSize * 0.6); plt.tight_layout()
-    
+    fig.set_size_inches(chartWidth, chartHeight); plt.tight_layout()
+
     # 2d scatter, one color
     if targetCol is None:
         X = df[[x,y]].values
         plt.scatter(x = X[:,0]
                         ,y = X[:,1]
-                        ,color = snsStyle.colTitleGrey
-                        #,label = targetLabel
-                        ,s = 150
+                        ,color = vizStyle.vizGrey
+                        ,s = 10 * chartProp
                         ,alpha = 0.7
                         ,facecolor = 'w'
-                        ,linewidth = 2.5
+                        ,linewidth = 0.167 * chartProp
                     )
     else:
         # 2d scatter with hue
@@ -32,57 +52,88 @@ def viz2dScatter(df, x, y, targetCol = None, targetLabels = None, chartSize = 15
         targetIds =  np.unique(X[:, 2])        
         
         # Plot data points
-        for targetId, targetLabel, color in zip(targetIds, targetLabels, colorOptions[:len(targetIds)]):
+        for targetId, targetLabel, color in zip(targetIds, targetLabels, vizStyle.vizColors[:len(targetIds)]):
             plt.scatter(x = X[X[:,2] == targetId][:,0]
                         ,y = X[X[:,2] == targetId][:,1]
                         ,color = color
                         ,label = targetLabel
-                        ,s = 150
+                        ,s = 10 * chartProp
                         ,alpha = 0.7
                         ,facecolor = 'w'
-                        ,linewidth = 3.5
+                        ,linewidth = 0.234 * chartProp
                     )
         lgd = plt.legend(loc = 'right'
                 ,bbox_to_anchor = (0., 1.5, 0.9, -1.302)
                 ,ncol = 1
-                ,borderaxespad = -11.5
+                ,borderaxespad = -0.766 * chartProp
                 ,frameon = True
-                ,fontsize = 20)
+                ,fontsize = 1.333 * chartProp)
     # Text labels
-    ax.set_title(title, fontsize = 30, color = snsStyle.colTitleGrey, loc = 'left', pad = 25)
-    plt.xlabel(x, fontsize = 25, labelpad = 25, position = (0.5, 0.5))
-    plt.ylabel(y, fontsize = 25, labelpad = 25, position = (1.0, yShift))
-    vizUtil.vizUtilLabelFormatter(ax = ax, xUnits = xUnits, xSize = 20, yUnits = yUnits, ySize = 20)
+    ax.set_title(title, fontsize = 1.999 * chartProp, color = vizStyle.vizGrey, loc = 'left', pad = 1.667 * chartProp)
+    plt.xlabel(x, fontsize = 1.667 * chartProp, labelpad = 1.667 * chartProp, position = (0.5, 0.5))
+    plt.ylabel(y, fontsize = 1.667 * chartProp, labelpad = 1.667 * chartProp, position = (1.0, yShift))
+    vizUtil.vizUtilLabelFormatter(ax = ax, xUnits = xUnits, xSize = 1.333 * chartProp, yUnits = yUnits, ySize = 1.333 * chartProp)
     
     # Dynamically set axis lower / upper limits
     xMin, xMax, yMin, yMax = vizUtil.vizUtilSetAxes(df = df, x = x, y = y)
     plt.axis([xMin, xMax, yMin, yMax])   
     
     vizUtil.vizUtilPlotBuffer(ax = ax, x = 0.02, y = 0.02)
-    #plt.show()
     return fig, ax
 
-def viz2dHist(x, ylabel, yShift, bins = 20, kde = False, rug = False, chartSize = 15, yDollars = False):
-    fig = plt.subplots(figsize = (chartSize, chartSize * 0.6))
-    g = sns.distplot(x
-                    ,bins =bins
-                    ,kde = kde
-                    ,rug = rug
-                    ,color = snsStyle.colTitleGrey)
-    g.set_xlabel(xlabel = '')
-    g.set_ylabel(ylabel = ylabel, labelpad = 25, position = (1.0, yShift))    
+def vizLine(df, xCols, y, targetLabels = None, chartProp = 15, yShift = 0.8, title = '', xUnits = None, yUnits = None, orientation = None, ax = None):
+    """
+    Parameters:
+        df = Pandas DataFrame. Select columns get converted to numpy arrays.
+        xCols = list, column namejs to chart x-axis value.
+        y = str, column name of DataFrame. y-axis value.
+        targetLabels (optional) = list, contains category labels of unique values in targetCol. Used for creating legend labels.
+        chartProp (optional) = Float. Controls proportionality of chart, ticklabels, tick marks, axis labels and title.
+        yShift (optional) = Float. Position y-axis label up/down axis.
+        title (optional) = str, chart title.
+        xUnits (optional) = str. '$' displays tick labels in dollars, '%' displays tick labels as percentages.
+        yUnits (optional) = str. '$' displays tick labels in dollars, '%' displays tick labels as percentages.
+        orientation = str. None provides wide orientation, 'tall' provides tall orientation.
+    
+    """
+    chartWidth = chartProp * .4 if orientation == 'tall' else chartProp
+    chartHeight = chartProp * .6 if orientation == 'tall' else chartProp * .5
 
-    if yDollars:
-        fmt = '${x:,.0f}'    # dollar sign formatting
-        tick = tkr.StrMethodFormatter(fmt)
-        g.yaxis.set_major_formatter(tick)   
-    g.set_xticklabels('')
-    plt.xticks([])
-    plt.tight_layout()
-    return g
+    fig, ax = plt.subplots()
+    
+    fig.set_size_inches(chartWidth, chartHeight); plt.tight_layout()
 
-def vizCorrHeatmap(df, cols, chartSize):
-    fig = plt.subplots(figsize = (chartSize, chartSize))
+    # 2d line
+    X = df[xCols].values
+    y = df[y].values
+
+    for colIx in np.arange(len(xCols)):
+        x = X[:,colIx]
+        plt.plot(x
+                 ,y
+                 ,color = vizStyle.vizColors[colIx]
+                 ,linestyle = vizStyle.vizLineStyle[colIx]
+                 ,linewidth = 0.167 * chartProp
+                 ,label = xCols[colIx]
+                 )
+        lgd = plt.legend(loc = 'right'
+                ,bbox_to_anchor = (0., 1.5, 0.9, -1.302)
+                ,ncol = 1
+                ,borderaxespad = -0.766 * chartProp
+                ,frameon = True
+                ,fontsize = 1.333 * chartProp)
+    # Text labels
+    ax.set_title(title, fontsize = 1.999 * chartProp, color = vizStyle.vizGrey, loc = 'left', pad = 1.667 * chartProp)
+    vizUtil.vizUtilLabelFormatter(ax = ax, xUnits = xUnits, xSize = 1.333 * chartProp, yUnits = yUnits, ySize = 1.333 * chartProp)
+    
+    vizUtil.vizUtilPlotBuffer(ax = ax, x = 0.02, y = 0.02)
+    return fig, ax
+
+def viz2dHist(x, ylabel, yShift, bins = 20, kde = False, rug = False, chartProp = 15, yDollars = False):
+    pass
+
+def vizCorrHeatmap(df, cols, chartProp):
+    fig = plt.subplots(figsize = (chartProp, chartProp))
     corrMatrix = df.corr()
     corrMatrix = corrMatrix.loc[cols][cols]
 
@@ -94,5 +145,3 @@ def vizCorrHeatmap(df, cols, chartSize):
                ,mask = mask
                ,square = True)
 
-def func():
-    pass

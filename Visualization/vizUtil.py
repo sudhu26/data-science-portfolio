@@ -2,25 +2,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 
-#import snsStyle
-
-colorOptions = ['#FF4F00' # orange
-               ,'#7F5EBA' # purple
-               ,'#FFC02E' # yellow
-               ,'#9BD020' # green
-               ,'#01ADAD'] # teal 
-
 def vizUtilPlotBuffer(ax, x, y):
+    """
+    Creates narrow border around plot arrow. 
+    Prevents plot icons from being clipped by plot edges.
+    """
     xLim = ax.get_xlim()
     yLim = ax.get_ylim()
 
-    xMargin = (xLim[1]-xLim[0])*x
-    yMargin = (yLim[1]-yLim[0])*y
+    xMargin = (xLim[1] - xLim[0]) * x
+    yMargin = (yLim[1] - yLim[0]) * y
 
     ax.set_xlim(xLim[0] - xMargin, xLim[1] + xMargin)
     ax.set_ylim(yLim[0] - yMargin, yLim[1] + yMargin)
 
 def vizUtilLabelFormatter(ax, xUnits, xSize, yUnits, ySize):
+    """
+    Formats tick labels as dolloars, percentages, or decimals.
+    """
     # x-axis
     if xUnits == '$':
         fmt = '${x:,.0f}'
@@ -32,7 +31,7 @@ def vizUtilLabelFormatter(ax, xUnits, xSize, yUnits, ySize):
     ax.xaxis.set_major_formatter(tick)
 
     for tk in ax.get_xticklabels():
-        tk.set_fontsize(20)
+        tk.set_fontsize(xSize)
 
     # y-axis
     if yUnits == '$':
@@ -45,9 +44,12 @@ def vizUtilLabelFormatter(ax, xUnits, xSize, yUnits, ySize):
     ax.yaxis.set_major_formatter(tick)
     
     for tk in ax.get_yticklabels():
-        tk.set_fontsize(20)
+        tk.set_fontsize(ySize)
 
 def vizUtilSetAxes(df, x, y, xThresh = 0.75, yThresh = 0.75):
+    """
+    Dynamically set lower/upper limits of x/y axes.
+    """
     xMin = round(np.min(df[x]), 5); xMax = round(np.max(df[x]), 5)
     xChange = (xMax - xMin) / xMax
     xMin = 0 if 1.00 >= xChange >= xThresh else np.round(xMin,1)
