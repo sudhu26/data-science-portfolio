@@ -79,7 +79,7 @@ def viz2dScatter(df, x, y, targetCol = None, targetLabels = None, chartProp = 15
     plt.axis([xMin, xMax, yMin, yMax])   
     
     vizUtil.vizUtilPlotBuffer(ax = ax, x = 0.02, y = 0.02)
-    return fig, ax
+    #return fig, ax
 
 def vizLine(df, xCols, y, targetLabels = None, chartProp = 15, yShift = 0.8, title = '', xUnits = None, yUnits = None, orientation = None, ax = None):
     """
@@ -127,7 +127,7 @@ def vizLine(df, xCols, y, targetLabels = None, chartProp = 15, yShift = 0.8, tit
     vizUtil.vizUtilLabelFormatter(ax = ax, xUnits = xUnits, xSize = 1.333 * chartProp, yUnits = yUnits, ySize = 1.333 * chartProp)
     
     vizUtil.vizUtilPlotBuffer(ax = ax, x = 0.02, y = 0.02)
-    return fig, ax
+    #return fig, ax
 
 def viz2dHist(x, ylabel, yShift, bins = 20, kde = False, rug = False, chartProp = 15, yDollars = False):
     pass
