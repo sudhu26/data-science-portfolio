@@ -8,15 +8,15 @@ import matplotlib.lines as Line2D
 import vizStyle
 import vizUtil
 
-def viz2dScatter(df, x, y, targetCol = None, targetLabels = None, chartProp = 15, yShift = 0.8, title = '', xUnits = None, yUnits = None, orientation = None, ax = None):
+def viz2dScatter(df, xColName, yColName, targetCol = None, targetLabels = None, chartProp = 15, yShift = 0.8, title = '', xUnits = None, yUnits = None, orientation = None, ax = None):
     """
     Creates 2-dimensional scatter plot. If targetCol is set to None, scatterplot is monochromatic. If targetCol is set to a specific column, 
     scatter plot takes on a hue based on the unique categories in targetCol
 
     Parameters:
         df = Pandas DataFrame. Select columns get converted to numpy arrays.
-        x = str, column name of DataFrame. x-axis value.
-        y = str, column name of DataFrame. y-axis value.
+        xColName = str, column name of DataFrame. x-axis value.
+        yColName = str, column name of DataFrame. y-axis value.
         targetCol (optional) = str, column name of DataFrame. Column used for differentiating x and y values by color.
         targetLabels (optional) = list, contains category labels of unique values in targetCol. Used for creating legend labels.
         chartProp (optional) = Float. Controls proportionality of chart, ticklabels, tick marks, axis labels and title.
@@ -36,7 +36,7 @@ def viz2dScatter(df, x, y, targetCol = None, targetLabels = None, chartProp = 15
 
     # 2d scatter, one color
     if targetCol is None:
-        X = df[[x,y]].values
+        X = df[[xColName, yColName]].values
         plt.scatter(x = X[:,0]
                         ,y = X[:,1]
                         ,color = vizStyle.vizGrey
@@ -48,7 +48,7 @@ def viz2dScatter(df, x, y, targetCol = None, targetLabels = None, chartProp = 15
     else:
         # 2d scatter with hue
         # Transform pandas dataframe to numpy array for visualization    
-        X = df[[x,y,targetCol]].values
+        X = df[[xColName, yColName, targetCol]].values
         targetIds =  np.unique(X[:, 2])        
         
         # Plot data points
@@ -70,23 +70,24 @@ def viz2dScatter(df, x, y, targetCol = None, targetLabels = None, chartProp = 15
                 ,fontsize = 1.333 * chartProp)
     # Text labels
     ax.set_title(title, fontsize = 1.999 * chartProp, color = vizStyle.vizGrey, loc = 'left', pad = 1.667 * chartProp)
-    plt.xlabel(x, fontsize = 1.667 * chartProp, labelpad = 1.667 * chartProp, position = (0.5, 0.5))
-    plt.ylabel(y, fontsize = 1.667 * chartProp, labelpad = 1.667 * chartProp, position = (1.0, yShift))
+    plt.xlabel(xColName, fontsize = 1.667 * chartProp, labelpad = 1.667 * chartProp, position = (0.5, 0.5))
+    plt.ylabel(yColName, fontsize = 1.667 * chartProp, labelpad = 1.667 * chartProp, position = (1.0, yShift))
     vizUtil.vizUtilLabelFormatter(ax = ax, xUnits = xUnits, xSize = 1.333 * chartProp, yUnits = yUnits, ySize = 1.333 * chartProp)
     
     # Dynamically set axis lower / upper limits
-    xMin, xMax, yMin, yMax = vizUtil.vizUtilSetAxes(df = df, x = x, y = y)
+    xMin, xMax, yMin, yMax = vizUtil.vizUtilSetAxes(df = df, x = xColName, y = yColName)
     plt.axis([xMin, xMax, yMin, yMax])   
     
     vizUtil.vizUtilPlotBuffer(ax = ax, x = 0.02, y = 0.02)
-    #return fig, ax
+    return fig, ax
 
-def vizLine(df, xCols, y, targetLabels = None, chartProp = 15, yShift = 0.8, title = '', xUnits = None, yUnits = None, orientation = None, ax = None):
+def vizLine(df, xColNames, yColNames, multiValAxis = 'x', targetLabels = None, chartProp = 15, yShift = 0.8, title = '', xUnits = None, yUnits = None, orientation = None):
     """
     Parameters:
         df = Pandas DataFrame. Select columns get converted to numpy arrays.
-        xCols = list, column namejs to chart x-axis value.
-        y = str, column name of DataFrame. y-axis value.
+        xColNames = list, column names to chart x-axis value.
+        yColNames = list, column names to chart y-axis value.
+        multiValAxis = str, dictates whether the 'x' axis or the 'y' axis plots different values for each series
         targetLabels (optional) = list, contains category labels of unique values in targetCol. Used for creating legend labels.
         chartProp (optional) = Float. Controls proportionality of chart, ticklabels, tick marks, axis labels and title.
         yShift (optional) = Float. Position y-axis label up/down axis.
@@ -104,30 +105,44 @@ def vizLine(df, xCols, y, targetLabels = None, chartProp = 15, yShift = 0.8, tit
     fig.set_size_inches(chartWidth, chartHeight); plt.tight_layout()
 
     # 2d line
-    X = df[xCols].values
-    y = df[y].values
+    X = df[xColNames].values
+    y = df[yColNames].values
 
-    for colIx in np.arange(len(xCols)):
-        x = X[:,colIx]
-        plt.plot(x
-                 ,y
-                 ,color = vizStyle.vizColors[colIx]
-                 ,linestyle = vizStyle.vizLineStyle[colIx]
-                 ,linewidth = 0.167 * chartProp
-                 ,label = xCols[colIx]
-                 )
-        lgd = plt.legend(loc = 'right'
-                ,bbox_to_anchor = (0., 1.5, 0.9, -1.302)
-                ,ncol = 1
-                ,borderaxespad = -0.766 * chartProp
-                ,frameon = True
-                ,fontsize = 1.333 * chartProp)
+    if multiValAxis == 'x':
+        for colIx in np.arange(X.shape[1]):
+            xCol = X[:,colIx]
+            plt.plot(xCol
+                    ,y
+                    ,color = vizStyle.vizColors[colIx]
+                    ,linestyle = vizStyle.vizLineStyle[colIx]
+                    ,linewidth = 0.167 * chartProp
+                    ,label = xColNames[colIx]
+                    )
+            
+    else:
+        for colIx in np.arange(y.shape[1]):
+            yCol = y[:,colIx]
+            plt.plot(X
+                    ,yCol
+                    ,color = vizStyle.vizColors[colIx]
+                    ,linestyle = vizStyle.vizLineStyle[colIx]
+                    ,linewidth = 0.167 * chartProp
+                    ,label = yColNames[colIx]
+                    )
+    
+    lgd = plt.legend(loc = 'right'
+            ,bbox_to_anchor = (0., 1.5, 0.9, -1.302)
+            ,ncol = 1
+            ,borderaxespad = -0.766 * chartProp
+            ,frameon = True
+            ,fontsize = 1.333 * chartProp)
+    
     # Text labels
     ax.set_title(title, fontsize = 1.999 * chartProp, color = vizStyle.vizGrey, loc = 'left', pad = 1.667 * chartProp)
     vizUtil.vizUtilLabelFormatter(ax = ax, xUnits = xUnits, xSize = 1.333 * chartProp, yUnits = yUnits, ySize = 1.333 * chartProp)
     
     vizUtil.vizUtilPlotBuffer(ax = ax, x = 0.02, y = 0.02)
-    #return fig, ax
+    return fig, ax
 
 def viz2dHist(x, ylabel, yShift, bins = 20, kde = False, rug = False, chartProp = 15, yDollars = False):
     pass
