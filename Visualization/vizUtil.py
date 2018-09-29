@@ -46,16 +46,18 @@ def vizUtilLabelFormatter(ax, xUnits, xSize, yUnits, ySize):
     for tk in ax.get_yticklabels():
         tk.set_fontsize(ySize)
 
-def vizUtilSetAxes(df, x, y, xThresh = 0.75, yThresh = 0.75):
+def vizUtilSetAxes(x, y, df = None, xThresh = 0.75, yThresh = 0.75):
     """
     Dynamically set lower/upper limits of x/y axes.
     """
-    xMin = round(np.min(df[x]), 5); xMax = round(np.max(df[x]), 5)
+    xMin = round(np.min(x), 5)# if df is None else round(np.min(df[x]), 5)
+    xMax = round(np.max(x), 5)# if df is None else round(np.max(df[x]), 5)
     xChange = (xMax - xMin) / xMax
     xMin = 0 if 1.00 >= xChange >= xThresh else np.round(xMin,1)
     xMax = xMax + xMax * 0.1
 
-    yMin = round(np.min(df[y]), 5); yMax = round(np.max(df[y]), 5)
+    yMin = round(np.min(y), 5)# if df is None else round(np.min(df[y]), 5)
+    yMax = round(np.max(y), 5)# if df is None else round(np.max(df[y]), 5)
     yChange = (yMax - yMin) / yMax
     yMin = 0 if 1.00 >= yChange >= yThresh else  np.round(yMin,1)
     yMax = yMax + yMax * 0.1
