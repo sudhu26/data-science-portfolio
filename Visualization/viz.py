@@ -10,39 +10,40 @@ import vizUtil
 
 class QuickPlot:
 
-
-    def __init__(self, fig = plt.figure(), ax = plt.subplot(111), chartProp = 15, orientation = None):
+    #plt.rcParams['figure.figsize'] = [15, 10]
+        
+    def __init__(self, fig = plt.figure(), chartProp = 15, orientation = None):
         """
-        Initialize QuickPlot object with basic fig, ax variables
-
-        chartProp = int or float, controls size of chart, labels, tick marks, etc.
-        orientation = None provides wide plot, 'tall' provides taller, narrower plot
+        
         """
-        self.fig = fig
-        self.ax = ax
         self.chartProp = chartProp
         self.orientation = orientation
+        self.fig = fig
+                
+        chartWidth = self.chartProp * .4 if self.orientation == 'tall' else self.chartProp
+        chartHeight = self.chartProp * .6 if self.orientation == 'tall' else self.chartProp * .5
         
-    def makeCanvas(self, title = '', xLabel = '', yLabel = '', yShift = 0.8):
+        self.fig.set_figheight(chartHeight)
+        self.fig.set_figwidth(chartWidth)
+        
+        #plt.rcParams['figure.figsize'] = [chartWidth, chartHeight]
+        
+    def makeCanvas(self, title = '', xLabel = '', yLabel = '', yShift = 0.8, position = 111):
         """
         Add basic informational components to figure, including titles and axis labels
         """        
+        ax = self.fig.add_subplot(position)
+        
         # Set additional defaults for plot figure, including chart size and layout
-        chartWidth = self.chartProp * .4 if self.orientation == 'tall' else self.chartProp
-        chartHeight = self.chartProp * .6 if self.orientation == 'tall' else self.chartProp * .5
-        plt.rcParams['figure.figsize'] = [chartWidth, chartHeight]
-        plt.tight_layout()        
-
         # Add title
-        self.ax.set_title(title, fontsize = 1.999 * self.chartProp, color = vizStyle.vizGrey, loc = 'left', pad = 1.667 * self.chartProp)
+        ax.set_title(title, fontsize = 1.999 * self.chartProp, color = vizStyle.vizGrey, loc = 'left', pad = 1.667 * self.chartProp)
     
         # Add axis labels
         plt.xlabel(xLabel, fontsize = 1.667 * self.chartProp, labelpad = 1.667 * self.chartProp, position = (0.5, 0.5))
         plt.ylabel(yLabel, fontsize = 1.667 * self.chartProp, labelpad = 1.667 * self.chartProp, position = (1.0, yShift))
+        return ax
 
-        return self.fig, self.ax
-
-    def viz2dScatter(self, x, y, df = None, xUnits = None, yUnits = None,):
+    def viz2dScatter(self, x, y, df = None, xUnits = None, yUnits = None, ax = None):
         """
         
         """
@@ -61,14 +62,16 @@ class QuickPlot:
                     ,alpha = 0.7
                     ,facecolor = 'w'
                     ,linewidth = 0.167 * self.chartProp
-                    )
-
+                   )
+        
         # Text labels
-        vizUtil.vizUtilLabelFormatter(ax = self.ax, xUnits = xUnits, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)
+        vizUtil.vizUtilLabelFormatter(ax = ax, xUnits = xUnits, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)        
     
         # Dynamically set axis lower / upper limits
         plt.axis([xMin, xMax, yMin, yMax])   
-        vizUtil.vizUtilPlotBuffer(ax = self.ax, x = 0.02, y = 0.02)
+        vizUtil.vizUtilPlotBuffer(ax = ax, x = 0.02, y = 0.02)
+
+        plt.tight_layout()
     
     def viz2dScatterHue(self, x, y, df = None, targetCol = None, targetLabels = None, xUnits = None, yUnits = None):
         """
@@ -111,9 +114,20 @@ class QuickPlot:
         plt.axis([xMin, xMax, yMin, yMax])   
         vizUtil.vizUtilPlotBuffer(ax = self.ax, x = 0.02, y = 0.02)
 
-    def vizLine(self, x, y, colNames, df = None, multiValAxis = 'x', xUnits = None, yUnits = None, markerOn = False):
+    def vizLine(self, x, y, colNames = None, df = None, linecolor = vizStyle.vizColors[0], linestyle = vizStyle.vizLineStyle[0], multiValAxis = 'x', xUnits = None, yUnits = None, markerOn = False, ax = None):
         """
-
+        Parameters:
+            df = Pandas DataFrame. Select columns get converted to numpy arrays.
+            xColNames = list, column names to chart x-axis value.
+            yColNames = list, column names to chart y-axis value.
+            multiValAxis = str, dictates whether the 'x' axis or the 'y' axis plots different values for each series
+            targetLabels (optional) = list, contains category labels of unique values in targetCol. Used for creating legend labels.
+            chartProp (optional) = Float. Controls proportionality of chart, ticklabels, tick marks, axis labels and title.
+            yShift (optional) = Float. Position y-axis label up/down axis.
+            title (optional) = str, chart title.
+            xUnits (optional) = str. '$' displays tick labels in dollars, '%' displays tick labels as percentages.
+            yUnits (optional) = str. '$' displays tick labels in dollars, '%' displays tick labels as percentages.
+            orientation = str. None provides wide orientation, 'tall' provides tall orientation.
         """
         if df is not None:
             X = df[x].values
@@ -127,45 +141,48 @@ class QuickPlot:
             for ix in np.arange(X.shape[1]):
                 xCol = X[:, ix]
                 plt.plot(xCol
-                        ,y
-                        ,color = vizStyle.vizColors[ix]
-                        ,linestyle = vizStyle.vizLineStyle[ix]
-                        ,linewidth = 0.167 * self.chartProp
-                        ,label = colNames[ix]
-                        ,marker = '.' if markerOn else None
-                        ,markersize = 25 if markerOn else None
-                        ,markerfacecolor = 'w' if markerOn else None
-                        ,markeredgewidth = 2.5 if markerOn else None
+                         ,y
+                         ,color = linecolor
+                         ,linestyle = vizStyle.vizLineStyle[ix]
+                         ,linewidth = 0.167 * self.chartProp
+                         ,label = colNames[ix] if colNames is not None else None
+                         ,marker = '.' if markerOn else None
+                         ,markersize = 25 if markerOn else None
+                         ,markerfacecolor = 'w' if markerOn else None
+                         ,markeredgewidth = 2.5 if markerOn else None
                         )                
         else:
             for ix in np.arange(y.shape[1]):
                 yCol = y[:, ix]
                 plt.plot(x
-                        ,yCol
-                        ,color = vizStyle.vizColors[ix]
-                        ,linestyle = vizStyle.vizLineStyle[ix]
-                        ,linewidth = 0.167 * self.chartProp
-                        ,label = colNames[ix]
-                        ,marker = '.' if markerOn else None
-                        ,markersize = 25 if markerOn else None
-                        ,markerfacecolor = 'w' if markerOn else None
-                        ,markeredgewidth = 2.5 if markerOn else None
+                         ,yCol
+                         ,color = vizStyle.vizColors[ix]
+                         ,linestyle = vizStyle.vizLineStyle[ix]
+                         ,linewidth = 0.167 * self.chartProp
+                         ,label = colNames[ix]
+                         ,marker = '.' if markerOn else None
+                         ,markersize = 25 if markerOn else None
+                         ,markerfacecolor = 'w' if markerOn else None
+                         ,markeredgewidth = 2.5 if markerOn else None
                         )
 
-        plt.legend(loc = 'right'
-                ,bbox_to_anchor = (0., 1.5, 0.9, -1.302)
-                ,ncol = 1
-                ,borderaxespad = -0.766 * self.chartProp
-                ,frameon = True
-                ,fontsize = 1.333 * self.chartProp
-                )
+        if colNames is not None:
+            plt.legend(loc = 'right'
+                       ,bbox_to_anchor = (0., 1.5, 0.9, -1.302)
+                       ,ncol = 1
+                       ,borderaxespad = -0.766 * self.chartProp
+                       ,frameon = True
+                       ,fontsize = 1.333 * self.chartProp
+                      )
         
         # Text labels
-        vizUtil.vizUtilLabelFormatter(ax = self.ax, xUnits = xUnits, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)
+        vizUtil.vizUtilLabelFormatter(ax = ax, xUnits = xUnits, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)
     
         # Dynamically set axis lower / upper limits
         plt.axis([xMin, xMax, yMin, yMax])   
-        vizUtil.vizUtilPlotBuffer(ax = self.ax, x = 0.02, y = 0.02)
+        vizUtil.vizUtilPlotBuffer(ax = ax, x = 0.02, y = 0.02)
+
+        plt.tight_layout()
             
 def viz2dScatter(df = None, x = None, y = None, targetCol = None, targetLabels = None, yShift = 0.8, title = '', xUnits = None, yUnits = None, orientation = None, ax = None):
     """
@@ -185,23 +202,6 @@ def viz2dScatter(df = None, x = None, y = None, targetCol = None, targetLabels =
         yUnits (optional) = str. '$' displays tick labels in dollars, '%' displays tick labels as percentages.
         orientation = str. None provides wide orientation, 'tall' provides tall orientation.
     """    
-    
-def vizLine(df, xColNames, yColNames, multiValAxis = 'x', chartProp = 15, yShift = 0.8, title = '', xUnits = None, yUnits = None, orientation = None):
-    """
-    Parameters:
-        df = Pandas DataFrame. Select columns get converted to numpy arrays.
-        xColNames = list, column names to chart x-axis value.
-        yColNames = list, column names to chart y-axis value.
-        multiValAxis = str, dictates whether the 'x' axis or the 'y' axis plots different values for each series
-        targetLabels (optional) = list, contains category labels of unique values in targetCol. Used for creating legend labels.
-        chartProp (optional) = Float. Controls proportionality of chart, ticklabels, tick marks, axis labels and title.
-        yShift (optional) = Float. Position y-axis label up/down axis.
-        title (optional) = str, chart title.
-        xUnits (optional) = str. '$' displays tick labels in dollars, '%' displays tick labels as percentages.
-        yUnits (optional) = str. '$' displays tick labels in dollars, '%' displays tick labels as percentages.
-        orientation = str. None provides wide orientation, 'tall' provides tall orientation.
-    
-    """
     
 def viz2dHist(x, ylabel, yShift, bins = 20, kde = False, rug = False, chartProp = 15, yDollars = False):
     pass
