@@ -2,9 +2,9 @@ import seaborn as sns
 
 vizColors = ['#FF4F00' # orange
             ,'#7F5EBA' # purple
-            ,'#FFC02E' # yellow
+            ,'#01ADAD' # teal
             ,'#9BD020' # green
-            ,'#01ADAD'] # teal
+            ,'#FFC02E'] # yellow
 
 vizLineStyle = ['-'
             ,'--'
