@@ -134,12 +134,10 @@ class QuickPlot:
 
         """
         if df is not None:
-            xMin, xMax, yMin, yMax = vizUtil.vizUtilSetAxes(df = df, x = x, y = y)
             x = df[x].values
             y = df[y].values
-        else:
-            xMin, xMax, yMin, yMax = vizUtil.vizUtilSetAxes(x = x, y = y)
-
+        xMin, xMax, yMin, yMax = vizUtil.vizUtilSetAxes(x = x, y = y)
+            
         # 2d scatter with hue
         # Transform pandas dataframe to numpy array for visualization    
         X = df[[x, y, targetCol]].values
@@ -170,7 +168,7 @@ class QuickPlot:
         plt.axis([xMin, xMax, yMin, yMax])   
         vizUtil.vizUtilPlotBuffer(ax = self.ax, x = 0.02, y = 0.02)
 
-    def vizLine(self, x, y, colNames = None, df = None, linecolor = vizStyle.vizColors[0], linestyle = vizStyle.vizLineStyle[0], 
+    def vizLine(self, x, y, label = None, df = None, linecolor = None, linestyle = None, 
                 bbox = (1.2, 0.9), yMultiVal = False, xUnits = None, yUnits = None, markerOn = False, plotBuffer = False, 
                 axisLimits = False, ax = None):
         """
@@ -186,7 +184,7 @@ class QuickPlot:
                 y : array or string
                     Either 1-dimensional array of values, a multidimensional array of values, a list of columns 
                     in a Pandas DataFrame, or a column name in a Pandas DataFrame.
-                colNames : list of strings : default = None
+                label : list of strings : default = None
                     List of names of used to create legend entries for each line.
                 df : Pandas DataFrame, default = None
                     Dataset containing data to be plotted. Can be any size, as plotted columns will be chosen 
@@ -226,10 +224,10 @@ class QuickPlot:
                 xCol = x[:, ix]
                 plt.plot(xCol
                          ,y
-                         ,color = linecolor
-                         ,linestyle = linestyle
+                         ,color = linecolor if linecolor is not None else vizStyle.vizColors[ix]
+                         ,linestyle = linestyle if linestyle is not None else vizStyle.vizLineStyle[0]
                          ,linewidth = 0.167 * self.chartProp
-                         ,label = colNames[ix] if colNames is not None else None
+                         ,label = label[ix] if label is not None else None
                          ,marker = '.' if markerOn else None
                          ,markersize = 25 if markerOn else None
                          ,markerfacecolor = 'w' if markerOn else None
@@ -240,10 +238,10 @@ class QuickPlot:
                 yCol = y[:, ix]
                 plt.plot(x
                          ,yCol
-                         ,color = linecolor
-                         ,linestyle = linestyle
+                         ,color = linecolor if linecolor is not None else vizStyle.vizColors[ix]
+                         ,linestyle = linestyle if linestyle is not None else vizStyle.vizLineStyle[0]
                          ,linewidth = 0.167 * self.chartProp
-                         ,label = colNames[ix]
+                         ,label = label[ix] if label is not None else None
                          ,marker = '.' if markerOn else None
                          ,markersize = 25 if markerOn else None
                          ,markerfacecolor = 'w' if markerOn else None
@@ -251,7 +249,7 @@ class QuickPlot:
                         )
 
         # Add legend to figure
-        if colNames is not None:
+        if label is not None:
             plt.legend(loc = 'upper right'
                        ,bbox_to_anchor = bbox
                        ,ncol = 1
