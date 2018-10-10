@@ -68,7 +68,7 @@ class QuickPlot:
         plt.ylabel(yLabel, fontsize = 1.667 * self.chartProp, labelpad = 1.667 * self.chartProp, position = (1.0, yShift))
         return ax
 
-    def viz2dScatter(self, x, y, df = None, xUnits = None, yUnits = None, plotBuffer = True, axisLimits = True, ax = None):
+    def viz2dScatter(self, x, y, df = None, xUnits = 'd', yUnits = 'd', plotBuffer = True, axisLimits = True, ax = None):
         """
         Info:
             Description: 
@@ -125,7 +125,7 @@ class QuickPlot:
         # Show figure with tight layout.
         plt.tight_layout()
     
-    def viz2dScatterHue(self, x, y, df = None, targetCol = None, targetLabels = None, xUnits = None, yUnits = None):
+    def viz2dScatterHue(self, x, y, target, label, df = None, xUnits = 'd', yUnits = 'd', plotBuffer = True, axisLimits = True, bbox = (1.2, 0.9), ax = None):
         """
         Info:
             Description:
@@ -136,37 +136,50 @@ class QuickPlot:
         if df is not None:
             x = df[x].values
             y = df[y].values
-        xMin, xMax, yMin, yMax = vizUtil.vizUtilSetAxes(x = x, y = y)
+            target = df[target].values
+            X = df[[x, y, target]].values
+        else:
+            X = np.c_[x, y, target]
+
+        targetIds =  np.unique(X[:, 2])
             
         # 2d scatter with hue
         # Transform pandas dataframe to numpy array for visualization    
-        X = df[[x, y, targetCol]].values
-        targetIds =  np.unique(X[:, 2])        
         
         # Plot data points
-        for targetId, targetLabel, color in zip(targetIds, targetLabels, vizStyle.vizColors[:len(targetIds)]):
+        for targetId, targetLabel, color in zip(targetIds, label, vizStyle.vizColors[:len(targetIds)]):
             plt.scatter(x = X[X[:,2] == targetId][:,0]
                         ,y = X[X[:,2] == targetId][:,1]
                         ,color = color
                         ,label = targetLabel
-                        ,s = 10 * chartProp
+                        ,s = 10 * self.chartProp
                         ,alpha = 0.7
                         ,facecolor = 'w'
-                        ,linewidth = 0.234 * chartProp
+                        ,linewidth = 0.234 * self.chartProp
                     )
-        lgd = plt.legend(loc = 'right'
-                ,bbox_to_anchor = (0., 1.5, 0.9, -1.302)
-                ,ncol = 1
-                ,borderaxespad = -0.766 * chartProp
-                ,frameon = True
-                ,fontsize = 1.333 * chartProp)
-
-        # Text labels
-        vizUtil.vizUtilLabelFormatter(ax = self.ax, xUnits = xUnits, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)
+        # Add legend to figure
+        if label is not None:
+            plt.legend(loc = 'upper right'
+                       ,bbox_to_anchor = bbox
+                       ,ncol = 1
+                       ,frameon = True
+                       ,fontsize = 1.1 * self.chartProp
+                      )
+            
+        # Axis tick label formatting.
+        vizUtil.vizUtilLabelFormatter(ax = ax, xUnits = xUnits, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)
     
         # Dynamically set axis lower / upper limits
-        plt.axis([xMin, xMax, yMin, yMax])   
-        vizUtil.vizUtilPlotBuffer(ax = self.ax, x = 0.02, y = 0.02)
+        if axisLimits:
+            xMin, xMax, yMin, yMax = vizUtil.vizUtilSetAxes(x = x, y = y)
+            plt.axis([xMin, xMax, yMin, yMax])   
+        
+        # Create smaller buffer around plot area to prevent cutting off elements.
+        if plotBuffer:
+            vizUtil.vizUtilPlotBuffer(ax = ax, x = 0.02, y = 0.02)
+
+        # Show figure with tight layout.
+        plt.tight_layout()
 
     def vizLine(self, x, y, label = None, df = None, linecolor = None, linestyle = None, 
                 bbox = (1.2, 0.9), yMultiVal = False, xUnits = None, yUnits = None, markerOn = False, plotBuffer = False, 
@@ -272,7 +285,7 @@ class QuickPlot:
         # Show figure with tight layout.
         plt.tight_layout()    
     
-    def viz2dHist(self, x, y, xLabels, labelRotate = 0, log = False, orientation = 'vertical', yUnits = None, ax = None):
+    def viz2dHist(self, x, y, xLabels, labelRotate = 0, log = False, orientation = 'vertical', yUnits = 'd', ax = None):
         """
         Info:
             Description:

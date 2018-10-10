@@ -1,10 +1,16 @@
 import seaborn as sns
 
 vizColors = ['#FF4F00' # orange
-            ,'#7F5EBA' # purple
+            ,'#4C2493' # purple
             ,'#01ADAD' # teal
             ,'#9BD020' # green
             ,'#FFC02E'] # yellow
+
+vizColorsLight = ['#FF9464' # orange
+            ,'#A387D5' # purple
+            ,'#7DC7C7' # teal
+            ,'#CCF274' # green
+            ,'#FFD87E'] # yellow
 
 vizLineStyle = ['-'
             ,'--'

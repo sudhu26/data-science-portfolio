@@ -16,7 +16,7 @@ def vizUtilPlotBuffer(ax, x, y):
     ax.set_xlim(xLim[0] - xMargin, xLim[1] + xMargin)
     ax.set_ylim(yLim[0] - yMargin, yLim[1] + yMargin)
 
-def vizUtilLabelFormatter(ax, xUnits = None, xSize = None, yUnits = None, ySize = None):
+def vizUtilLabelFormatter(ax, xUnits, yUnits, xSize = None, ySize = None):
     """
     Info:
         Description:
@@ -36,30 +36,52 @@ def vizUtilLabelFormatter(ax, xUnits = None, xSize = None, yUnits = None, ySize 
                 y-axis label size
     """
     # x-axis
-    if xUnits is not None:
-        if xUnits == '$':
-            fmt = '${x:,.0f}'
-        elif xUnits == '%':
-            fmt = '{x:,.1f}%'
-        else:
-            fmt = '{x:,.2f}'    
-        tick = tkr.StrMethodFormatter(fmt)
-        ax.xaxis.set_major_formatter(tick)
+    if xUnits == 'd':
+        fmt = '${x:,.0f}'
+    elif xUnits == 'dd':
+        fmt = '${x:,.1f}'
+    elif xUnits == 'ddd':
+        fmt = '${x:,.2f}'    
+    elif xUnits == 'p':
+        fmt = '{x:,.0f}%'
+    elif xUnits == 'pp':
+        fmt = '{x:,.1f}%'
+    elif xUnits == 'ppp':
+        fmt = '{x:,.2f}%'
+    elif xUnits == 'f':
+        fmt = '{x:,.0f}'
+    elif xUnits == 'ff':
+        fmt = '{x:,.1f}'
+    elif xUnits == 'fff':
+        fmt = '{x:,.2f}'
+    tick = tkr.StrMethodFormatter(fmt)
+    ax.xaxis.set_major_formatter(tick)
 
     for tk in ax.get_xticklabels():
         tk.set_fontsize(xSize)
 
     # y-axis
-    if yUnits is not None:
-        if yUnits == '$':
-            fmt = '${x:,.0f}'
-        elif yUnits == '%':
-            fmt = '{x:,.1f}%'
-        else:
-            fmt = '{x:,.2f}'    
-        tick = tkr.StrMethodFormatter(fmt)
-        ax.yaxis.set_major_formatter(tick)
-        
+    if yUnits == 'd':
+        fmt = '${x:,.0f}'
+    elif yUnits == 'dd':
+        fmt = '${x:,.1f}'
+    elif yUnits == 'ddd':
+        fmt = '${x:,.2f}'    
+    elif yUnits == 'p':
+        fmt = '{x:,.0f}%'
+    elif yUnits == 'pp':
+        fmt = '{x:,.1f}%'
+    elif yUnits == 'ppp':
+        fmt = '{x:,.2f}%'
+    elif yUnits == 'f':
+        fmt = '{x:,.0f}'
+    elif yUnits == 'ff':
+        fmt = '{x:,.1f}'
+    elif yUnits == 'fff':
+        fmt = '{x:,.2f}'
+    tick = tkr.StrMethodFormatter(fmt)
+    ax.yaxis.set_major_formatter(tick)
+    
     for tk in ax.get_yticklabels():
         tk.set_fontsize(ySize)
 
