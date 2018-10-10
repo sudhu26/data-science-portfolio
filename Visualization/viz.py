@@ -3,7 +3,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
-import matplotlib.lines as Line2D
+from matplotlib.colors import ListedColormap
 
 import vizStyle
 import vizUtil
@@ -147,7 +147,7 @@ class QuickPlot:
         # Transform pandas dataframe to numpy array for visualization    
         
         # Plot data points
-        for targetId, targetLabel, color in zip(targetIds, label, vizStyle.vizColors[:len(targetIds)]):
+        for targetId, targetLabel, color in zip(targetIds, label, vizStyle.vizColorsHexMid[:len(targetIds)]):
             plt.scatter(x = X[X[:,2] == targetId][:,0]
                         ,y = X[X[:,2] == targetId][:,1]
                         ,color = color
@@ -237,7 +237,7 @@ class QuickPlot:
                 xCol = x[:, ix]
                 plt.plot(xCol
                          ,y
-                         ,color = linecolor if linecolor is not None else vizStyle.vizColors[ix]
+                         ,color = linecolor if linecolor is not None else vizStyle.vizColorsHexMid[ix]
                          ,linestyle = linestyle if linestyle is not None else vizStyle.vizLineStyle[0]
                          ,linewidth = 0.167 * self.chartProp
                          ,label = label[ix] if label is not None else None
@@ -251,7 +251,7 @@ class QuickPlot:
                 yCol = y[:, ix]
                 plt.plot(x
                          ,yCol
-                         ,color = linecolor if linecolor is not None else vizStyle.vizColors[ix]
+                         ,color = linecolor if linecolor is not None else vizStyle.vizColorsHexMid[ix]
                          ,linestyle = linestyle if linestyle is not None else vizStyle.vizLineStyle[0]
                          ,linewidth = 0.167 * self.chartProp
                          ,label = label[ix] if label is not None else None
@@ -329,3 +329,64 @@ class QuickPlot:
                 ,mask = mask
                 ,square = True)
 
+    def vizDecisionRegion(self, x, y, classifier, testIdx = None, resolution = 0.001, bbox = (1.2, 0.9), ax = None):
+        """
+        Info:
+            Description:
+            
+            Parameters:
+                X : Array
+                y : Array
+                classifier : sklearn model
+                testIdx :  , default = None
+                resolution : float, default = 0.001
+        """
+        # objects for marker generator and color map
+        cmap = ListedColormap(vizStyle.vizColorsHexLight[:len(np.unique(y))])
+        
+        # plot decision surface
+        x1Min, x1Max = x[:, 0].min() - 1, x[:, 0].max() + 1
+        x2Min, x2Max = x[:, 1].min() - 1, x[:, 1].max() + 1
+        
+        xx1, xx2 = np.meshgrid(np.arange(x1Min, x1Max, resolution)
+                            ,np.arange(x2Min, x2Max, resolution))
+        
+        Z = classifier.predict(np.array([xx1.ravel(), xx2.ravel()]).T)
+        Z = Z.reshape(xx1.shape)
+        plt.contourf(xx1, xx2, Z, slpha = 0.3, cmap = cmap)
+        plt.xlim(xx1.min(), xx1.max())
+        plt.ylim(xx2.min(), xx2.max())
+        
+        # Plot samples
+        for idx, cl in enumerate(np.unique(y)):
+            plt.scatter(x = x[y == cl, 0]
+                    ,y = x[y == cl, 1]
+                    ,alpha = 1.0
+                    ,c = vizStyle.vizColorsHexMid[idx]
+                    ,marker = vizStyle.vizMarkers[1]
+                    ,label = cl
+                    ,s = 12.5 * self.chartProp
+                    ,edgecolor = vizStyle.vizColorsHexMidDark[idx]
+                    )
+        
+        # Highlight test samples
+        if testIdx:
+            xTest = x[testIdx, :]
+            plt.scatter(xTest[:,0]
+                        ,xTest[:,1]
+                        ,facecolor = 'none'
+                        ,edgecolor = 'white'
+                        ,alpha = 1.0
+                        ,linewidth = 1.4
+                        ,marker = 'o'
+                        ,s = 12.75 * self.chartProp
+                        ,label = 'test set'                   
+                    )
+        # Add legend to figure
+        plt.legend(loc = 'upper right'
+                    ,bbox_to_anchor = bbox
+                    ,ncol = 1
+                    ,frameon = True
+                    ,fontsize = 1.1 * self.chartProp
+                    )
+        plt.tight_layout()
