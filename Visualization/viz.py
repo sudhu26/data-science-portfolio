@@ -68,7 +68,8 @@ class QuickPlot:
         plt.ylabel(yLabel, fontsize = 1.667 * self.chartProp, labelpad = 1.667 * self.chartProp, position = (1.0, yShift))
         return ax
 
-    def viz2dScatter(self, x, y, df = None, xUnits = 'd', yUnits = 'd', plotBuffer = True, axisLimits = True, ax = None):
+    def viz2dScatter(self, x, y, df = None, xUnits = 'f', yUnits = 'f', plotBuffer = True
+                    , axisLimits = True, ax = None):
         """
         Info:
             Description: 
@@ -125,7 +126,8 @@ class QuickPlot:
         # Show figure with tight layout.
         plt.tight_layout()
     
-    def viz2dScatterHue(self, x, y, target, label, df = None, xUnits = 'd', yUnits = 'd', plotBuffer = True, axisLimits = True, bbox = (1.2, 0.9), ax = None):
+    def viz2dScatterHue(self, x, y, target, label, df = None, xUnits = 'd', yUnits = 'd', plotBuffer = True
+                        , axisLimits = True, bbox = (1.2, 0.9), ax = None):
         """
         Info:
             Description:
@@ -134,10 +136,10 @@ class QuickPlot:
 
         """
         if df is not None:
+            X = df[[x, y, target]].values
             x = df[x].values
             y = df[y].values
             target = df[target].values
-            X = df[[x, y, target]].values
         else:
             X = np.c_[x, y, target]
 
@@ -181,9 +183,9 @@ class QuickPlot:
         # Show figure with tight layout.
         plt.tight_layout()
 
-    def vizLine(self, x, y, label = None, df = None, linecolor = None, linestyle = None, 
-                bbox = (1.2, 0.9), yMultiVal = False, xUnits = None, yUnits = None, markerOn = False, plotBuffer = False, 
-                axisLimits = False, ax = None):
+    def vizLine(self, x, y, label = None, df = None, linecolor = None, linestyle = None
+                , bbox = (1.2, 0.9), yMultiVal = False, xUnits = 'f', yUnits = 'f', markerOn = False
+                , plotBuffer = False, axisLimits = False, ax = None):
         """
         Info:
             Description: 
@@ -210,10 +212,10 @@ class QuickPlot:
                     Override bbox value for legend
                 yMultiVal : boolean : default = False
                     If a single x value is paired with multiple y values, set to True.
-                xUnits : string, default = None
+                xUnits : string, default = 'd'
                     Determines units of x-axis tick labels. None displays float. '%' displays percentages, 
                     '$' displays dollars. 
-                yUnits : string, default = None
+                yUnits : string, default = 'd'
                     Determines units of y-axis tick labels. None displays float. '%' displays percentages, 
                     '$' displays dollars.
                 markerOn : boolean, default = False
@@ -285,7 +287,8 @@ class QuickPlot:
         # Show figure with tight layout.
         plt.tight_layout()    
     
-    def viz2dHist(self, x, y, xLabels, labelRotate = 0, log = False, orientation = 'vertical', yUnits = 'd', ax = None):
+    def viz2dHist(self, x, y, xLabels, labelRotate = 0, log = False, orientation = 'vertical'
+                 , yUnits = 'd', ax = None):
         """
         Info:
             Description:
@@ -333,13 +336,20 @@ class QuickPlot:
         """
         Info:
             Description:
-            
+                Create 2-dimensional chart with shading used to highlight decision regions
             Parameters:
                 X : Array
+                    m x 2 array containing 2 features
                 y : Array
+                    m x 1 array containing labels for observations
                 classifier : sklearn model
-                testIdx :  , default = None
+                    Classifier used to create decision regions
+                testIdx :  tuple, default = None
+                    Option parameter for specifying observations to be highlighted
+                    as test examples
                 resolution : float, default = 0.001
+                    Controls clarity of the graph by setting interval of the arrays 
+                    passed into np.meshgrid
         """
         # objects for marker generator and color map
         cmap = ListedColormap(vizStyle.vizColorsHexLight[:len(np.unique(y))])
