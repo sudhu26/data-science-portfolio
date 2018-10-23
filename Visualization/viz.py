@@ -287,8 +287,8 @@ class QuickPlot:
         # Show figure with tight layout.
         plt.tight_layout()    
     
-    def viz2dHist(self, x, y, xLabels, labelRotate = 0, log = False, orientation = 'vertical'
-                 , yUnits = 'd', ax = None):
+    def vizHist(self, x, y, xLabels, labelRotate = 0, log = False, orientation = 'vertical'
+                 , yUnits = 'ff', ax = None):
         """
         Info:
             Description:

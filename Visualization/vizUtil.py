@@ -16,7 +16,7 @@ def vizUtilPlotBuffer(ax, x, y):
     ax.set_xlim(xLim[0] - xMargin, xLim[1] + xMargin)
     ax.set_ylim(yLim[0] - yMargin, yLim[1] + yMargin)
 
-def vizUtilLabelFormatter(ax, xUnits, yUnits, xSize = None, ySize = None):
+def vizUtilLabelFormatter(ax, xUnits = None, yUnits = None, xSize = None, ySize = None):
     """
     Info:
         Description:
@@ -54,8 +54,10 @@ def vizUtilLabelFormatter(ax, xUnits, yUnits, xSize = None, ySize = None):
         fmt = '{x:,.1f}'
     elif xUnits == 'fff':
         fmt = '{x:,.2f}'
-    tick = tkr.StrMethodFormatter(fmt)
-    ax.xaxis.set_major_formatter(tick)
+    
+    if  xUnits is not None:
+        tick = tkr.StrMethodFormatter(fmt)
+        ax.xaxis.set_major_formatter(tick)
 
     for tk in ax.get_xticklabels():
         tk.set_fontsize(xSize)
@@ -79,8 +81,10 @@ def vizUtilLabelFormatter(ax, xUnits, yUnits, xSize = None, ySize = None):
         fmt = '{x:,.1f}'
     elif yUnits == 'fff':
         fmt = '{x:,.2f}'
-    tick = tkr.StrMethodFormatter(fmt)
-    ax.yaxis.set_major_formatter(tick)
+    
+    if yUnits is not None:
+        tick = tkr.StrMethodFormatter(fmt)
+        ax.yaxis.set_major_formatter(tick)
     
     for tk in ax.get_yticklabels():
         tk.set_fontsize(ySize)
