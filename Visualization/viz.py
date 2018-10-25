@@ -31,8 +31,8 @@ class QuickPlot:
         self.fig = fig
         
         # Dynamically set chart width and height parameters
-        chartWidth = self.chartProp * .4 if self.plotOrientation == 'tall' else self.chartProp
-        chartHeight = self.chartProp * .6 if self.plotOrientation == 'tall' else self.chartProp * .5
+        chartWidth = self.chartProp * .7 if self.plotOrientation == 'tall' else self.chartProp
+        chartHeight = self.chartProp * .8 if self.plotOrientation == 'tall' else self.chartProp * .5
         self.fig.set_figheight(chartHeight)
         self.fig.set_figwidth(chartWidth)
 
