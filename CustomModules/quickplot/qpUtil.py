@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 
-def vizUtilPlotBuffer(ax, x, y):
+def qpUtilPlotBuffer(ax, x, y):
     """
     Creates narrow border around plot arrow. 
     Prevents plot icons from being clipped by plot edges.
@@ -16,7 +16,7 @@ def vizUtilPlotBuffer(ax, x, y):
     ax.set_xlim(xLim[0] - xMargin, xLim[1] + xMargin)
     ax.set_ylim(yLim[0] - yMargin, yLim[1] + yMargin)
 
-def vizUtilLabelFormatter(ax, xUnits = None, yUnits = None, xSize = None, ySize = None):
+def qpUtilLabelFormatter(ax, xUnits = None, yUnits = None, xSize = None, ySize = None):
     """
     Info:
         Description:
@@ -89,7 +89,7 @@ def vizUtilLabelFormatter(ax, xUnits = None, yUnits = None, xSize = None, ySize 
     for tk in ax.get_yticklabels():
         tk.set_fontsize(ySize)
 
-def vizUtilSetAxes(x, y, xThresh = 0.75, yThresh = 0.75):
+def qpUtilSetAxes(x, y, xThresh = 0.75, yThresh = 0.75):
     """
     Dynamically set lower/upper limits of x/y axes.
     """

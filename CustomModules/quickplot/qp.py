@@ -1,12 +1,11 @@
 import numpy as np
-
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 from matplotlib.colors import ListedColormap
 
-import vizStyle
-import vizUtil
+import quickplot.qpStyle as qpStyle
+import quickplot.qpUtil as qpUtil
 
 class QuickPlot:
 
@@ -61,14 +60,14 @@ class QuickPlot:
         ax = self.fig.add_subplot(position)
         
         # Add title
-        ax.set_title(title, fontsize = 1.999 * self.chartProp, color = vizStyle.vizGrey, loc = 'left', pad = 1.667 * self.chartProp)
+        ax.set_title(title, fontsize = 1.999 * self.chartProp, color = qpStyle.qpGrey, loc = 'left', pad = 1.667 * self.chartProp)
     
         # Add axis labels
         plt.xlabel(xLabel, fontsize = 1.667 * self.chartProp, labelpad = 1.667 * self.chartProp, position = (0.5, 0.5))
         plt.ylabel(yLabel, fontsize = 1.667 * self.chartProp, labelpad = 1.667 * self.chartProp, position = (1.0, yShift))
         return ax
 
-    def viz2dScatter(self, x, y, df = None, xUnits = 'f', yUnits = 'f', plotBuffer = True
+    def qp2dScatter(self, x, y, df = None, xUnits = 'f', yUnits = 'f', plotBuffer = True
                     , axisLimits = True, ax = None):
         """
         Info:
@@ -104,7 +103,7 @@ class QuickPlot:
         # 2d scatter
         plt.scatter(x = x
                     ,y = y
-                    ,color = vizStyle.vizGrey
+                    ,color = qpStyle.qpGrey
                     ,s = 10 * self.chartProp
                     ,alpha = 0.7
                     ,facecolor = 'w'
@@ -112,21 +111,21 @@ class QuickPlot:
                    )
         
         # Axis tick label formatting.
-        vizUtil.vizUtilLabelFormatter(ax = ax, xUnits = xUnits, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)        
+        qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)        
     
         # Dynamically set axis lower / upper limits
         if axisLimits:
-            xMin, xMax, yMin, yMax = vizUtil.vizUtilSetAxes(x = x, y = y)        
+            xMin, xMax, yMin, yMax = qpUtil.qpUtilSetAxes(x = x, y = y)        
             plt.axis([xMin, xMax, yMin, yMax])   
 
         # Create smaller buffer around plot area to prevent cutting off elements.
         if plotBuffer:
-            vizUtil.vizUtilPlotBuffer(ax = ax, x = 0.02, y = 0.02)
+            qpUtil.qpUtilPlotBuffer(ax = ax, x = 0.02, y = 0.02)
 
         # Show figure with tight layout.
         plt.tight_layout()
     
-    def viz2dScatterHue(self, x, y, target, label, df = None, xUnits = 'd', yUnits = 'd', plotBuffer = True
+    def qp2dScatterHue(self, x, y, target, label, df = None, xUnits = 'd', yUnits = 'd', plotBuffer = True
                         , axisLimits = True, bbox = (1.2, 0.9), ax = None):
         """
         Info:
@@ -149,7 +148,7 @@ class QuickPlot:
         # Transform pandas dataframe to numpy array for visualization    
         
         # Plot data points
-        for targetId, targetLabel, color in zip(targetIds, label, vizStyle.vizColorsHexMid[:len(targetIds)]):
+        for targetId, targetLabel, color in zip(targetIds, label, qpStyle.qpColorsHexMid[:len(targetIds)]):
             plt.scatter(x = X[X[:,2] == targetId][:,0]
                         ,y = X[X[:,2] == targetId][:,1]
                         ,color = color
@@ -169,21 +168,21 @@ class QuickPlot:
                       )
             
         # Axis tick label formatting.
-        vizUtil.vizUtilLabelFormatter(ax = ax, xUnits = xUnits, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)
+        qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)
     
         # Dynamically set axis lower / upper limits
         if axisLimits:
-            xMin, xMax, yMin, yMax = vizUtil.vizUtilSetAxes(x = x, y = y)
+            xMin, xMax, yMin, yMax = qpUtil.qpUtilSetAxes(x = x, y = y)
             plt.axis([xMin, xMax, yMin, yMax])   
         
         # Create smaller buffer around plot area to prevent cutting off elements.
         if plotBuffer:
-            vizUtil.vizUtilPlotBuffer(ax = ax, x = 0.02, y = 0.02)
+            qpUtil.qpUtilPlotBuffer(ax = ax, x = 0.02, y = 0.02)
 
         # Show figure with tight layout.
         plt.tight_layout()
 
-    def vizLine(self, x, y, label = None, df = None, linecolor = None, linestyle = None
+    def qpLine(self, x, y, label = None, df = None, linecolor = None, linestyle = None
                 , bbox = (1.2, 0.9), yMultiVal = False, xUnits = 'f', yUnits = 'f', markerOn = False
                 , plotBuffer = False, axisLimits = False, ax = None):
         """
@@ -239,8 +238,8 @@ class QuickPlot:
                 xCol = x[:, ix]
                 plt.plot(xCol
                          ,y
-                         ,color = linecolor if linecolor is not None else vizStyle.vizColorsHexMid[ix]
-                         ,linestyle = linestyle if linestyle is not None else vizStyle.vizLineStyle[0]
+                         ,color = linecolor if linecolor is not None else qpStyle.qpColorsHexMid[ix]
+                         ,linestyle = linestyle if linestyle is not None else qpStyle.qpLineStyle[0]
                          ,linewidth = 0.167 * self.chartProp
                          ,label = label[ix] if label is not None else None
                          ,marker = '.' if markerOn else None
@@ -253,8 +252,8 @@ class QuickPlot:
                 yCol = y[:, ix]
                 plt.plot(x
                          ,yCol
-                         ,color = linecolor if linecolor is not None else vizStyle.vizColorsHexMid[ix]
-                         ,linestyle = linestyle if linestyle is not None else vizStyle.vizLineStyle[0]
+                         ,color = linecolor if linecolor is not None else qpStyle.qpColorsHexMid[ix]
+                         ,linestyle = linestyle if linestyle is not None else qpStyle.qpLineStyle[0]
                          ,linewidth = 0.167 * self.chartProp
                          ,label = label[ix] if label is not None else None
                          ,marker = '.' if markerOn else None
@@ -273,21 +272,21 @@ class QuickPlot:
                       )
             
         # Axis tick label formatting.
-        vizUtil.vizUtilLabelFormatter(ax = ax, xUnits = xUnits, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)
+        qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)
     
         # Dynamically set axis lower / upper limits
         if axisLimits:
-            xMin, xMax, yMin, yMax = vizUtil.vizUtilSetAxes(x = x, y = y)
+            xMin, xMax, yMin, yMax = qpUtil.qpUtilSetAxes(x = x, y = y)
             plt.axis([xMin, xMax, yMin, yMax])   
         
         # Create smaller buffer around plot area to prevent cutting off elements.
         if plotBuffer:
-            vizUtil.vizUtilPlotBuffer(ax = ax, x = 0.02, y = 0.02)
+            qpUtil.qpUtilPlotBuffer(ax = ax, x = 0.02, y = 0.02)
 
         # Show figure with tight layout.
         plt.tight_layout()    
     
-    def vizHist(self, x, y, xLabels, labelRotate = 0, log = False, orientation = 'vertical'
+    def qpHist(self, x, y, xLabels, labelRotate = 0, log = False, orientation = 'vertical'
                  , yUnits = 'ff', ax = None):
         """
         Info:
@@ -301,7 +300,7 @@ class QuickPlot:
         """
         plt.bar(x = x
                 ,height = y
-                ,color = vizStyle.vizGrey
+                ,color = qpStyle.qpGrey
                 ,tick_label = xLabels
                 ,orientation = orientation
                 ,alpha = 0.5
@@ -310,9 +309,9 @@ class QuickPlot:
         plt.xticks(rotation = labelRotate)
 
         # Axis tick label formatting.
-        vizUtil.vizUtilLabelFormatter(ax = ax, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)    
+        qpUtil.qpUtilLabelFormatter(ax = ax, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)    
 
-    def vizCorrHeatmap(self, df, cols, chartProp):
+    def qpCorrHeatmap(self, df, cols, chartProp):
         """
         Info:
             Description:
@@ -332,7 +331,7 @@ class QuickPlot:
                 ,mask = mask
                 ,square = True)
 
-    def vizDecisionRegion(self, x, y, classifier, testIdx = None, resolution = 0.001, bbox = (1.2, 0.9), ax = None):
+    def qpDecisionRegion(self, x, y, classifier, testIdx = None, resolution = 0.001, bbox = (1.2, 0.9), ax = None):
         """
         Info:
             Description:
@@ -352,7 +351,7 @@ class QuickPlot:
                     passed into np.meshgrid
         """
         # objects for marker generator and color map
-        cmap = ListedColormap(vizStyle.vizColorsHexLight[:len(np.unique(y))])
+        cmap = ListedColormap(qpStyle.qpColorsHexLight[:len(np.unique(y))])
         
         # plot decision surface
         x1Min, x1Max = x[:, 0].min() - 1, x[:, 0].max() + 1
@@ -372,11 +371,11 @@ class QuickPlot:
             plt.scatter(x = x[y == cl, 0]
                     ,y = x[y == cl, 1]
                     ,alpha = 1.0
-                    ,c = vizStyle.vizColorsHexMid[idx]
-                    ,marker = vizStyle.vizMarkers[1]
+                    ,c = qpStyle.qpColorsHexMid[idx]
+                    ,marker = qpStyle.qpMarkers[1]
                     ,label = cl
                     ,s = 12.5 * self.chartProp
-                    ,edgecolor = vizStyle.vizColorsHexMidDark[idx]
+                    ,edgecolor = qpStyle.qpColorsHexMidDark[idx]
                     )
         
         # Highlight test samples
