@@ -97,9 +97,12 @@ class QuickPlot:
         
         # If a Pandas DataFrame is passed to function, create x, y arrays using columns names passed into function.
         if df is not None:
-            x = df[x].values
-            y = df[y].values
-                
+            x = df[x].values.reshape(-1,1)
+            y = df[y].values.reshape(-1,1)
+        else:
+            x = x.reshape(-1,1)
+            y = y.reshape(-1,1)
+        
         # 2d scatter
         plt.scatter(x = x
                     ,y = y
@@ -231,6 +234,9 @@ class QuickPlot:
         if df is not None:
             x = df[x].values
             y = df[y].values
+        else:
+            x = x.reshape(-1,1) if len(x.shape) == 1 else x
+            y = y.reshape(-1,1) if len(y.shape) == 1 else y
         
         # Add line 
         if not yMultiVal:
@@ -240,7 +246,7 @@ class QuickPlot:
                          ,y
                          ,color = linecolor if linecolor is not None else qpStyle.qpColorsHexMid[ix]
                          ,linestyle = linestyle if linestyle is not None else qpStyle.qpLineStyle[0]
-                         ,linewidth = 0.167 * self.chartProp
+                         ,linewidth = 0.247 * self.chartProp
                          ,label = label[ix] if label is not None else None
                          ,marker = '.' if markerOn else None
                          ,markersize = 25 if markerOn else None
@@ -254,7 +260,7 @@ class QuickPlot:
                          ,yCol
                          ,color = linecolor if linecolor is not None else qpStyle.qpColorsHexMid[ix]
                          ,linestyle = linestyle if linestyle is not None else qpStyle.qpLineStyle[0]
-                         ,linewidth = 0.167 * self.chartProp
+                         ,linewidth = 0.247 * self.chartProp
                          ,label = label[ix] if label is not None else None
                          ,marker = '.' if markerOn else None
                          ,markersize = 25 if markerOn else None
