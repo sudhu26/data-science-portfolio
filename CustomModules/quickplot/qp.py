@@ -1,8 +1,11 @@
 import numpy as np
+import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 from matplotlib.colors import ListedColormap
+
+import sklearn.metrics as metrics
 
 import quickplot.qpStyle as qpStyle
 import quickplot.qpUtil as qpUtil
@@ -30,8 +33,15 @@ class QuickPlot:
         self.fig = fig
         
         # Dynamically set chart width and height parameters
-        chartWidth = self.chartProp * .7 if self.plotOrientation == 'tall' else self.chartProp
-        chartHeight = self.chartProp * .8 if self.plotOrientation == 'tall' else self.chartProp * .5
+        if plotOrientation == 'tall':
+            chartWidth = self.chartProp * .7
+            chartHeight = self.chartProp * .8
+        elif plotOrientation == 'square':
+            chartWidth = self.chartProp
+            chartHeight = self.chartProp * .8
+        else:            
+            chartWidth = self.chartProp
+            chartHeight = self.chartProp * .5
         self.fig.set_figheight(chartHeight)
         self.fig.set_figwidth(chartWidth)
 
@@ -317,6 +327,82 @@ class QuickPlot:
         # Axis tick label formatting.
         qpUtil.qpUtilLabelFormatter(ax = ax, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)    
 
+    def qpConfusionMatrix(self, yTest, yPred, ax = None):
+        """
+        Info:
+            Description:
+
+            Parameters:
+
+        """
+        cm = pd.DataFrame(metrics.confusion_matrix(y_true = yTest
+                                                    , y_pred = yPred)
+                                                    )
+        cm.sort_index(axis = 1, ascending = False, inplace=True)
+        cm.sort_index(axis = 0, ascending = False, inplace=True)
+        sns.heatmap(data = cm
+                    ,annot = True
+                    ,square = True
+                    ,cbar = False
+                    ,cmap = 'Blues'
+                    ,annot_kws = {"size": 2.5 * self.chartProp})
+        ax.xaxis.tick_top()
+        plt.xlabel('predicted', size = 40)
+        plt.ylabel('actual', size = 40)
+        
+    def qpRocCurve(self, model, xTrain, yTrain, xTest, yTest, linecolor, ax = None):
+        """
+        Info:
+            Description:
+                Plot ROC curve and report AUC
+            Parameters:
+                model : sklearn model or pipeline
+                    model to fit
+                xTrain : array
+                    Training data to fit model
+                yTrain : array
+                    Training data to fit model
+                xTest : array
+                    Test data to return predict_probas
+                yTest : array
+                    Test data for creating roc_curve
+                linecolor : str
+                    line color
+
+        """
+        probas = model.fit(xTrain, yTrain).predict_proba(xTest)
+        fpr, tpr, thresholds = metrics.roc_curve(yTest, probas[:, 1], pos_label = 1)
+        roc_auc = metrics.auc(fpr, tpr)
+        self.qpLine(x = fpr
+                    ,y = tpr
+                    ,label = ['ROC AUC = {:.3f}'.format(roc_auc)]
+                    ,linecolor = linecolor
+                    ,xUnits = 'fff'
+                    ,yUnits = 'fff'
+                    ,bbox = (1.0, 0.8)
+                    ,ax = ax
+                   )
+        self.qpLine(x = np.array([0, 1])
+                    ,y = np.array([0, 1])
+                    ,linecolor = qpStyle.qpGrey
+                    ,linestyle = '--'
+                    ,xUnits = 'fff'
+                    ,yUnits = 'fff'
+                    ,ax = ax
+                   )
+        self.qpLine(x = np.array([0, 0, 1])
+                    ,y = np.array([0, 1, 1])
+                    ,linecolor = qpStyle.qpGrey
+                    ,linestyle = ':'
+                    ,xUnits = 'fff'
+                    ,yUnits = 'fff'
+                    ,ax = ax
+                   )
+
+
+                   
+        
+    
     def qpCorrHeatmap(self, df, cols, chartProp):
         """
         Info:
