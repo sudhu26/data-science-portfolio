@@ -371,7 +371,7 @@ class QuickPlot:
 
         """
         probas = model.fit(xTrain, yTrain).predict_proba(xTest)
-        fpr, tpr, thresholds = metrics.roc_curve(yTest, probas[:, 1], pos_label = 1)
+        fpr, tpr, thresholds = metrics.roc_curve(y_true = yTest, y_score = probas[:, 1], pos_label = 1)
         roc_auc = metrics.auc(fpr, tpr)
         self.qpLine(x = fpr
                     ,y = tpr
