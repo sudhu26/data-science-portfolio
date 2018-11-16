@@ -6,21 +6,26 @@ import os
 import numpy as np
 
 from vectorizer import vect
+from update import update_model
+
+app = Flask(__name__)
 
 # Prepare classifier
 
 cur_dir = os.path.dirname('__file__')
 clf = pickle.load(open(os.path.join(cur_dir
-                                    ,'pokl_objects'
+                                    ,'ch09_Flask_Apps'
+                                    ,'movieClassifier'
+                                    ,'pkl_objects'
                                     ,'classifier.pkl'), 'rb'))
-db = os.path.joim(cur_dir, 'reviews.sqlite')
+db = os.path.join(cur_dir, 'reviews.sqlite')
 
 def classify(document):
     label = {0 : 'negative', 1 : 'positive'}
-    X = vect.transform[document]
+    X = vect.transform([document])
     y = clf.predict(X)[0]
-    probab = np.max(clf.predict_proba(X))
-    return label[y], probab
+    proba = np.max(clf.predict_proba(X))
+    return label[y], proba
 
 def train(document, y):
     X = vect.transform([document])
@@ -69,3 +74,6 @@ def feedback():
 
 if __name__ == '__main__':
     app.run(debug = True)
+    clf = update_model(db_path = db
+                        ,model = clf
+                        ,batch_size = 1000)

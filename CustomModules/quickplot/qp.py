@@ -399,30 +399,6 @@ class QuickPlot:
                     ,ax = ax
                    )
 
-
-                   
-        
-    
-    def qpCorrHeatmap(self, df, cols, chartProp):
-        """
-        Info:
-            Description:
-
-            Parameters:
-
-        """
-        fig = plt.subplots(figsize = (chartProp, chartProp))
-        corrMatrix = df.corr()
-        corrMatrix = corrMatrix.loc[cols][cols]
-
-        mask = np.zeros_like(corrMatrix)
-        mask[np.triu_indices_from(mask)] = True
-
-        sns.heatmap(corrMatrix
-                ,cmap = 'Greys'
-                ,mask = mask
-                ,square = True)
-
     def qpDecisionRegion(self, x, y, classifier, testIdx = None, resolution = 0.001, bbox = (1.2, 0.9), ax = None):
         """
         Info:
@@ -491,3 +467,57 @@ class QuickPlot:
                     ,fontsize = 1.1 * self.chartProp
                     )
         plt.tight_layout()
+
+    def qpPairPlot(self, df, vars = None, hue = None, diag_kind = 'auto'):
+        """
+        Info:
+            Description: 
+                a        
+            Parameters:
+                a : a
+                    a
+                a : a
+                    a
+        """
+        with plt.rc_context({'axes.titlesize' : 1.5 * self.chartProp
+                            ,'axes.labelsize' : 1.5 * self.chartProp  # Axis title font size
+                            ,'xtick.labelsize' : 1.0 * self.chartProp
+                            ,'ytick.labelsize' : 1.0 * self.chartProp
+                            ,'axes.facecolor': qpStyle.qpWhite
+                            ,'axes.edgecolor': qpStyle.qpColorsHexMid[0]}):
+            sns.pairplot(data = df
+                        ,vars = vars
+                        ,hue = hue 
+                        ,diag_kind = diag_kind
+                        ,height = 4.0
+                        ,markers = 'o'
+                        ,plot_kws = {'size' : 200
+                                    ,'edgecolor' : qpStyle.qpColorsHexMid[0]
+                                    ,'linewidth' : 1}
+                        ,diag_kws = {'shade' : True}
+                        #,palette = 
+                        )
+        #g.show()
+        
+    
+    def qpCorrHeatmap(self, df, cols, chartProp):
+        """
+        Info:
+            Description:
+
+            Parameters:
+
+        """
+        fig = plt.subplots(figsize = (chartProp, chartProp))
+        corrMatrix = df.corr()
+        corrMatrix = corrMatrix.loc[cols][cols]
+
+        mask = np.zeros_like(corrMatrix)
+        mask[np.triu_indices_from(mask)] = True
+
+        sns.heatmap(corrMatrix
+                ,cmap = 'Greys'
+                ,mask = mask
+                ,square = True)
+
+    
