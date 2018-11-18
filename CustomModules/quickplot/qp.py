@@ -3,7 +3,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
-from matplotlib.colors import ListedColormap
+from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 
 import sklearn.metrics as metrics
 
@@ -479,28 +479,55 @@ class QuickPlot:
                 a : a
                     a
         """
-        with plt.rc_context({'axes.titlesize' : 1.5 * self.chartProp
+        with plt.rc_context({'axes.titlesize' : 3.5 * self.chartProp
                             ,'axes.labelsize' : 1.5 * self.chartProp  # Axis title font size
-                            ,'xtick.labelsize' : 1.0 * self.chartProp
-                            ,'ytick.labelsize' : 1.0 * self.chartProp
+                            
+                            ,'xtick.labelsize' : 1.2 * self.chartProp
+                            ,'xtick.major.size' : 0.5 * self.chartProp
+                            ,'xtick.major.width' : 0.05 * self.chartProp
+            
+                            ,'ytick.labelsize' : 1.2 * self.chartProp
+                            ,'ytick.major.size' : 0.5 * self.chartProp
+                            ,'ytick.major.width' : 0.05 * self.chartProp
+            
+                            ,'figure.facecolor' : qpStyle.qpWhite
+                            
                             ,'axes.facecolor': qpStyle.qpWhite
-                            ,'axes.edgecolor': qpStyle.qpColorsHexMid[0]}):
-            sns.pairplot(data = df
-                        ,vars = vars
-                        ,hue = hue 
-                        ,diag_kind = diag_kind
-                        ,height = 4.0
-                        ,markers = 'o'
-                        ,plot_kws = {'size' : 200
-                                    ,'edgecolor' : qpStyle.qpColorsHexMid[0]
-                                    ,'linewidth' : 1}
-                        ,diag_kws = {'shade' : True}
-                        #,palette = 
+                            ,'axes.spines.left': True
+                            ,'axes.spines.bottom': True            
+                            ,'axes.edgecolor': qpStyle.qpGrey
+                            }):
+            g = sns.pairplot(data = df
+                            ,vars = vars
+                            ,hue = hue 
+                            ,diag_kind = diag_kind
+                            ,height = 0.2 * self.chartProp
+                            ,plot_kws = {'s' : 2.0 * self.chartProp
+                                        ,'edgecolor' : None
+                                        ,'linewidth' : 1
+                                        ,'alpha' : 1.0
+                                        ,'marker' : 'o'
+                                        }
+                            ,diag_kws = {'shade' : True}
+                            ,palette = qpStyle.qpColorsHexMid
+                            )
+            # Turn off standard legend
+            g.fig.legend()
+            g.fig.legends = []
+
+            # Add custom legend
+            handles = g._legend_data.values()
+            labels = g._legend_data.keys()
+            g.fig.legend(handles = handles
+                        ,labels = labels
+                        ,loc = 'upper center'
+                        ,markerscale = 0.15 * self.chartProp
+                        ,ncol = len(df[hue].unique())
+                        ,bbox_to_anchor = (0.5, 1.05, 0, 0)
+                        ,prop = {'size' : 1.5 * self.chartProp}
                         )
-        #g.show()
         
-    
-    def qpCorrHeatmap(self, df, cols, chartProp):
+    def qpCorrHeatmap(self, df, annot = True, cols = None, ax = None):
         """
         Info:
             Description:
@@ -508,16 +535,25 @@ class QuickPlot:
             Parameters:
 
         """
-        fig = plt.subplots(figsize = (chartProp, chartProp))
-        corrMatrix = df.corr()
-        corrMatrix = corrMatrix.loc[cols][cols]
+        corrMatrix = df[cols].corr() if cols is not None else df.corr() 
+        
+        g = sns.heatmap(corrMatrix
+                    ,vmin = -1.0
+                    ,vmax = 1.0
+                    ,annot = annot
+                    ,annot_kws = {'size' : 1.5 * self.chartProp}
+                    ,square = True
+                    ,ax = ax
+                    ,cmap = LinearSegmentedColormap.from_list(name = ''
+                                                            ,colors = [qpStyle.qpColorsRgb0Mid[1], 'white', qpStyle.qpColorsRgb0Mid[0]])
+                    )
 
-        mask = np.zeros_like(corrMatrix)
-        mask[np.triu_indices_from(mask)] = True
+        g.set_yticklabels(g.get_yticklabels(), rotation = 0, fontsize = 1.25 * self.chartProp)
+        g.set_xticklabels(g.get_xticklabels(), rotation = 0, fontsize = 1.25 * self.chartProp)
 
-        sns.heatmap(corrMatrix
-                ,cmap = 'Greys'
-                ,mask = mask
-                ,square = True)
+        # Customize color bar formatting
+        cbar = g.collections[0].colorbar
+        cbar.ax.tick_params(labelsize = 2.0 * self.chartProp, length = 0)
+        cbar.set_ticks([1, -1])
 
     

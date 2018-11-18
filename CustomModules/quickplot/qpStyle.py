@@ -53,6 +53,8 @@ rcGrey = {'axes.titlesize' : 50.0
             ,'ytick.right': False
             ,'ytick.major.size' : 10.0
             ,'ytick.major.width' : 3.0
+
+            ,'figure.facecolor' : qpWhite
                 
             ,'font.family': ['Arial']
             }
