@@ -78,7 +78,7 @@ class QuickPlot:
         return ax
 
     def qp2dScatter(self, x, y, df = None, xUnits = 'f', yUnits = 'f', plotBuffer = True
-                    , axisLimits = True, ax = None):
+                    , axisLimits = True, color = qpStyle.qpGrey, facecolor = 'w', ax = None):
         """
         Info:
             Description: 
@@ -116,10 +116,10 @@ class QuickPlot:
         # 2d scatter
         plt.scatter(x = x
                     ,y = y
-                    ,color = qpStyle.qpGrey
+                    ,color = color
                     ,s = 10 * self.chartProp
                     ,alpha = 0.7
-                    ,facecolor = 'w'
+                    ,facecolor = facecolor
                     ,linewidth = 0.167 * self.chartProp
                    )
         
@@ -511,21 +511,22 @@ class QuickPlot:
                             ,diag_kws = {'shade' : True}
                             ,palette = qpStyle.qpColorsHexMid
                             )
-            # Turn off standard legend
-            g.fig.legend()
-            g.fig.legends = []
+            if hue is not None:
+                # Turn off standard legend
+                g.fig.legend()
+                g.fig.legends = []
 
-            # Add custom legend
-            handles = g._legend_data.values()
-            labels = g._legend_data.keys()
-            g.fig.legend(handles = handles
-                        ,labels = labels
-                        ,loc = 'upper center'
-                        ,markerscale = 0.15 * self.chartProp
-                        ,ncol = len(df[hue].unique())
-                        ,bbox_to_anchor = (0.5, 1.05, 0, 0)
-                        ,prop = {'size' : 1.5 * self.chartProp}
-                        )
+                # Add custom legend
+                handles = g._legend_data.values()
+                labels = g._legend_data.keys()
+                g.fig.legend(handles = handles
+                            ,labels = labels
+                            ,loc = 'upper center'
+                            ,markerscale = 0.15 * self.chartProp
+                            ,ncol = len(df[hue].unique())
+                            ,bbox_to_anchor = (0.5, 1.05, 0, 0)
+                            ,prop = {'size' : 1.5 * self.chartProp}
+                            )
         
     def qpCorrHeatmap(self, df, annot = True, cols = None, ax = None):
         """
