@@ -13,7 +13,7 @@ class MySpider(scrapy.Spider):
         for a_el in response.css('div#mainbar div.listResults div.-job-summary'):
             section = DocSectionItem()
             section['title'] = a_el.css('div.-title a::text').extract()[0]
-            section['company'] = a_el.css('span:not(.fc-black-500)::text').extract()[2].strip()
+            section['company'] = a_el.css('span:not(.fc-black-500)::text').extract()[2].strip().replace('\r\n','')
             section['location'] = a_el.css('span.fc-black-500::text').extract()[1].strip().replace('- \r\n','')
             
             yield section
