@@ -302,8 +302,7 @@ class QuickPlot:
         # Show figure with tight layout.
         plt.tight_layout()    
     
-    def qpHist(self, x, y, xLabels, labelRotate = 0, log = False, orientation = 'vertical'
-                 , yUnits = 'ff', ax = None):
+    def qpBar(self, x, counts, labelRotate = 0, log = False, yUnits = 'f', xUnits = 'f', ax = None):
         """
         Info:
             Description:
@@ -315,17 +314,36 @@ class QuickPlot:
                 log : boolean, default = True
         """
         plt.bar(x = x
-                ,height = y
-                ,color = qpStyle.qpGrey
-                ,tick_label = xLabels
-                ,orientation = orientation
-                ,alpha = 0.5
+                ,height = counts
+                ,color = qpStyle.qpColorsHexMid[0]
+                ,tick_label = x
+                ,alpha = 0.8
             )
 
         plt.xticks(rotation = labelRotate)
-
         # Axis tick label formatting.
-        qpUtil.qpUtilLabelFormatter(ax = ax, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)    
+        qpUtil.qpUtilLabelFormatter(ax = ax, xSize = 1.333 * self.chartProp, yUnits = yUnits, xUnits = xUnits, ySize = 1.333 * self.chartProp)    
+
+    def qpBarH(self, y, counts, labelRotate = 45, log = False, yUnits = 'f', xUnits = 'f', ax = None):
+        """
+        Info:
+            Description:
+
+            Parameters:
+                x : Array
+                y : Array
+                xLabels : List
+                log : boolean
+        """
+        plt.barh(y = y
+                ,width = counts
+                ,color = qpStyle.qpColorsHexMid[1]
+                ,tick_label = y
+                ,alpha = 0.8
+            )
+        plt.xticks(rotation = labelRotate)
+        # Axis tick label formatting.
+        qpUtil.qpUtilLabelFormatter(ax = ax, xSize = 1.333 * self.chartProp, yUnits = yUnits, xUnits = xUnits, ySize = 1.333 * self.chartProp)
 
     def qpConfusionMatrix(self, yTest, yPred, ax = None):
         """
@@ -557,4 +575,34 @@ class QuickPlot:
         cbar.ax.tick_params(labelsize = 2.0 * self.chartProp, length = 0)
         cbar.set_ticks([1, -1])
 
-    
+    def qpFacetCat(self, df, label = True, ax = None):
+        """
+        Info:
+            Description:
+
+            Parameters:
+
+        """
+        pass
+
+    def qpFacetContin(self, df, label = True, ax = None):
+        """
+        Info:
+            Description:
+
+            Parameters:
+
+        """
+        pass
+
+class MLEDA(QuickPlot):
+
+
+    def __init__(self):
+        """
+        I see this being a higher level object that wraps the lower leve.
+        visualations in useful ways
+
+        perhaps there is another lower level class that performs statistics things like z/t-tests
+        """
+        pass
