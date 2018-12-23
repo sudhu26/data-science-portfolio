@@ -54,6 +54,8 @@ def qpUtilLabelFormatter(ax, xUnits = None, yUnits = None, xSize = None, ySize =
         fmt = '{x:,.1f}'
     elif xUnits == 'fff':
         fmt = '{x:,.2f}'
+    elif xUnits == 'ffff':
+        fmt = '{x:,.3f}'
     
     if xUnits is not None and xUnits != 's':
         tick = tkr.StrMethodFormatter(fmt)
@@ -81,6 +83,8 @@ def qpUtilLabelFormatter(ax, xUnits = None, yUnits = None, xSize = None, ySize =
         fmt = '{x:,.1f}'
     elif yUnits == 'fff':
         fmt = '{x:,.2f}'
+    elif yUnits == 'ffff':
+        fmt = '{x:,.3f}'
     
     if yUnits is not None and yUnits != 's':
         tick = tkr.StrMethodFormatter(fmt)
