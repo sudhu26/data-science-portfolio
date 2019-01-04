@@ -44,7 +44,7 @@ class QuickPlot:
             chartWidth = self.chartProp
             chartHeight = self.chartProp * .8
         elif plotOrientation == 'wide':
-            chartWidth = self.chartProp * 1.3
+            chartWidth = self.chartProp * 1.5
             chartHeight = self.chartProp * .4
         else:            
             chartWidth = self.chartProp
@@ -583,26 +583,44 @@ class QuickPlot:
         cbar.ax.tick_params(labelsize = 2.0 * self.chartProp, length = 0)
         cbar.set_ticks([1, -1])
 
-    def qpKde(self, x, yUnits = 'f', xUnits = 's', bbox = (1.2, 0.9), legend = False, ax = None):
+    def qpKde(self, x, color, yUnits = 'f', xUnits = 's', bbox = (1.2, 0.9), legend = False, ax = None):
         """
 
         """
         g = sns.kdeplot(data = x
                         ,shade = True
+                        ,color = color
+                        ,legend = legend
                         ,ax = ax)
 
         # Add legend to figure
-        if legend:
-            plt.legend(loc = 'upper right'
-                        ,bbox_to_anchor = bbox
-                        ,ncol = 1
-                        ,frameon = True
-                        ,fontsize = 1.1 * self.chartProp
-                        )
+        # if legend:
+        #     plt.legend(loc = 'upper right'
+        #                 ,bbox_to_anchor = bbox
+        #                 ,ncol = 1
+        #                 ,frameon = True
+        #                 ,fontsize = 1.1 * self.chartProp
+        #                 )
 
         # Axis tick label formatting.
         qpUtil.qpUtilLabelFormatter(ax = ax, xSize = 1.333 * self.chartProp, yUnits = yUnits, xUnits = xUnits, ySize = 1.333 * self.chartProp)
         
+    def qpFacetNum(self, x, color, label, ax = None):
+        """
+        Info:
+            Description:
+
+            Parameters:
+                x : Array
+                y : Array
+                xLabels : List
+                log : boolean, default = True
+        """
+        plt.hist(x = x
+                ,color = color
+                ,label = label
+                ,alpha = 0.5
+                )        
 
     def qpFacetCat(self, df, feature, yUnits = 'f', xUnits = 's', bbox = (1.2, 0.9), ax = None):       
 
@@ -634,8 +652,6 @@ class QuickPlot:
         # Axis tick label formatting.
         qpUtil.qpUtilLabelFormatter(ax = ax, xSize = 1.333 * self.chartProp, yUnits = yUnits, xUnits = xUnits, ySize = 1.333 * self.chartProp)
         
-        
-
 class MLEDA(QuickPlot):
 
 
@@ -713,12 +729,14 @@ class MLEDA(QuickPlot):
     def featureSummary(self, skipDtype = ['date']):
         """
 
-        """
+        """        
+        # Iterate through each feature type and associated feature list
         for k, v in self.featureByDtype_.items():
             if k not in skipDtype:
                 print('**********\n{} columns'.format(k))
+                
+                # Iterate through each feature within a feature type
                 for feature in v:                
-                    print('\n' + feature)
                     
                     # Univariate summary
                     uniSummDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion'])
@@ -729,9 +747,9 @@ class MLEDA(QuickPlot):
                                                 ,'Proportion' : j / np.sum(unique_counts) * 100
                                                 }
                                             ,ignore_index = True)
-                    #display(uniSummDf)
-
+                    
                     # Bivariate summary
+                    biDf = pd.DataFrame(self.X_[feature]).join(self.y_)
                     biSummDf = pd.DataFrame(self.X_[feature]).join(self.y_)\
                                         .groupby([feature] + self.y_.columns.tolist()).size().reset_index()\
                                         .pivot(columns = self.y_.columns.tolist()[0], index = feature, values = 0)
@@ -739,17 +757,18 @@ class MLEDA(QuickPlot):
                     singleIndex = pd.Index([i for i in multiIndex.tolist()])
                     biSummDf.columns = singleIndex
                     biSummDf.reset_index(inplace = True)
-                    #display(biSummDf)
-
-
+                    
+                    # Instantiate charting object
                     p = QuickPlot(fig = plt.figure(), chartProp = 15, plotOrientation = 'wide')
-                    if k in ['bool1']:
+                    
+                    # Boolean feautes
+                    if k in ['bool']:
                         
                         # Display summary tables
-                        self.dfSideBySide(dfs = (uniSummDf, biSummDf, uniSummDf, biSummDf), names = ['df 1', 'df2', 'asdf', 'HII'])
+                        self.dfSideBySide(dfs = (uniSummDf, biSummDf), names = ['df 1', 'df2'])
                         
                         # Univariate plot
-                        ax = p.makeCanvas(title = '{} - Univariate'.format(feature), yShift = 0.8, position = 121)
+                        ax = p.makeCanvas(title = 'Univariate\n-{}'.format(feature), yShift = 0.8, position = 121)
                         p.qpBarH(y = unique
                                 ,counts = unique_counts
                                 ,color = qpStyle.qpColorsHexMid[2]
@@ -760,26 +779,41 @@ class MLEDA(QuickPlot):
                                 )
                         
                         # Bivariate plot
-                        ax = p.makeCanvas(title = '{} - Faceted by target'.format(feature), yShift = 0.8, position = 122)
+                        ax = p.makeCanvas(title = 'Faceted by target\n-{}'.format(feature), yShift = 0.8, position = 122)
                         p.qpFacetCat(df = biSummDf
                                     ,feature = feature
                                     ,ax = ax)
 
+                    # Numeric features
                     elif k in ['int32','int64','float32','float64']:
                         
+                        # Display summary tables
+                        describeDf = pd.DataFrame(biDf[feature].describe()).reset_index()
+                        self.dfSideBySide(dfs = (describeDf, describeDf), names = ['df1', 'df1'])
+
                         # Univariate plot
-                        ax = p.makeCanvas(title = '{} - Univariate'.format(feature), yShift = 0.8, position = 121)
+                        ax = p.makeCanvas(title = 'KDE - Univariate\n-{}'.format(feature), yShift = 0.8, position = 131)
                         p.qpKde(self.X_[feature]
+                                ,color = qpStyle.qpColorsHexMid[0]
                                 ,yUnits = 'ffff'
                                 ,ax = ax)
                         
-                        # Bivariate plot
-                        ax = p.makeCanvas(title = '{} - Faceted by target'.format(feature), yShift = 0.8, position = 122)
-                        numDf = pd.DataFrame(self.X_[feature]).join(self.y_)
-                        for labl in np.unique(self.y_):
-                            p.qpKde(numDf[numDf[self.target[0]] == labl][feature]
+                        # Bivariate kernel density plot
+                        ax = p.makeCanvas(title = 'KDE - Faceted by target\n-{}'.format(feature), yShift = 0.8, position = 132)
+                        for ix, labl in enumerate(np.unique(self.y_)):
+                            p.qpKde(biDf[biDf[self.target[0]] == labl][feature]
+                                    ,color = qpStyle.qpColorsHexMid[ix]
                                     ,yUnits = 'ffff'
                                     ,ax = ax)
+                        
+                        # Bivariate histogram
+                        ax = p.makeCanvas(title = 'Hist - Faceted by target\n-{}'.format(feature), yShift = 0.8, position = 133)
+                        for ix, labl in enumerate(np.unique(self.y_)):
+                            p.qpFacetNum(biDf[biDf[self.target[0]] == labl][feature]
+                                        ,color = qpStyle.qpColorsHexMid[ix]
+                                        ,label = labl)
+
+                    # String / object features
                     elif k == 'object':
                         p.qpBar(x = unique
                                 ,counts = unique_counts

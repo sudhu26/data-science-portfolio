@@ -61,8 +61,9 @@ def qpUtilLabelFormatter(ax, xUnits = None, yUnits = None, xSize = None, ySize =
         tick = tkr.StrMethodFormatter(fmt)
         ax.xaxis.set_major_formatter(tick)
 
-    for tk in ax.get_xticklabels():
-        tk.set_fontsize(xSize)
+    if xSize is not None:
+        for tk in ax.get_xticklabels():
+            tk.set_fontsize(xSize)
 
     # y-axis
     if yUnits == 'd':
@@ -90,8 +91,9 @@ def qpUtilLabelFormatter(ax, xUnits = None, yUnits = None, xSize = None, ySize =
         tick = tkr.StrMethodFormatter(fmt)
         ax.yaxis.set_major_formatter(tick)
     
-    for tk in ax.get_yticklabels():
-        tk.set_fontsize(ySize)
+    if ySize is not None:
+        for tk in ax.get_yticklabels():
+            tk.set_fontsize(ySize)
 
 def qpUtilSetAxes(x, y, xThresh = 0.75, yThresh = 0.75):
     """
