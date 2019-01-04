@@ -13,6 +13,7 @@ import quickplot.qpUtil as qpUtil
 
 from IPython.display import display_html
     
+sns.set_style('whitegrid')
 
 class QuickPlot:
 
@@ -44,8 +45,8 @@ class QuickPlot:
             chartWidth = self.chartProp
             chartHeight = self.chartProp * .8
         elif plotOrientation == 'wide':
-            chartWidth = self.chartProp * 1.5
-            chartHeight = self.chartProp * .4
+            chartWidth = self.chartProp * 1.7
+            chartHeight = self.chartProp * .32
         else:            
             chartWidth = self.chartProp
             chartHeight = self.chartProp * .5
@@ -77,8 +78,17 @@ class QuickPlot:
         ax = self.fig.add_subplot(position)
         
         # Add title
-        ax.set_title(title, fontsize = 1.999 * self.chartProp, color = qpStyle.qpGrey, loc = 'left', pad = 1.667 * self.chartProp)
-    
+        ax.set_title(title
+                    ,fontsize = 1.999 * self.chartProp if position == 111 else 1.499 * self.chartProp
+                    ,color = qpStyle.qpGrey
+                    ,loc = 'left'
+                    ,pad = 1.667 * self.chartProp)
+        ax.tick_params(axis = 'both', colors = qpStyle.qpGrey, labelsize = 1.333 * self.chartProp)
+
+        ax.grid(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+
         # Add axis labels
         plt.xlabel(xLabel, fontsize = 1.667 * self.chartProp, labelpad = 1.667 * self.chartProp, position = (0.5, 0.5))
         plt.ylabel(yLabel, fontsize = 1.667 * self.chartProp, labelpad = 1.667 * self.chartProp, position = (1.0, yShift))
@@ -131,7 +141,7 @@ class QuickPlot:
                    )
         
         # Axis tick label formatting.
-        qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)        
+        qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, yUnits = yUnits)        
     
         # Dynamically set axis lower / upper limits
         if axisLimits:
@@ -188,8 +198,8 @@ class QuickPlot:
                       )
             
         # Axis tick label formatting.
-        qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)
-    
+        qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, yUnits = yUnits)
+
         # Dynamically set axis lower / upper limits
         if axisLimits:
             xMin, xMax, yMin, yMax = qpUtil.qpUtilSetAxes(x = x, y = y)
@@ -295,8 +305,8 @@ class QuickPlot:
                       )
             
         # Axis tick label formatting.
-        qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, xSize = 1.333 * self.chartProp, yUnits = yUnits, ySize = 1.333 * self.chartProp)
-    
+        qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, yUnits = yUnits)
+
         # Dynamically set axis lower / upper limits
         if axisLimits:
             xMin, xMax, yMin, yMax = qpUtil.qpUtilSetAxes(x = x, y = y)
@@ -328,9 +338,10 @@ class QuickPlot:
             )
 
         plt.xticks(rotation = labelRotate)
+        
         # Axis tick label formatting.
-        qpUtil.qpUtilLabelFormatter(ax = ax, xSize = 1.333 * self.chartProp, yUnits = yUnits, xUnits = xUnits, ySize = 1.333 * self.chartProp)    
-
+        qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, yUnits = yUnits)
+        
     def qpBarH(self, y, counts, color = qpStyle.qpColorsHexMid[0], labelRotate = 45, log = False
                 , yUnits = 'f', xUnits = 'f', ax = None):
         """
@@ -350,8 +361,9 @@ class QuickPlot:
                 ,alpha = 0.8
             )
         plt.xticks(rotation = labelRotate)
+        
         # Axis tick label formatting.
-        qpUtil.qpUtilLabelFormatter(ax = ax, xSize = 1.333 * self.chartProp, yUnits = yUnits, xUnits = xUnits, ySize = 1.333 * self.chartProp)
+        qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, yUnits = yUnits)
 
     def qpConfusionMatrix(self, yTest, yPred, ax = None):
         """
@@ -583,29 +595,54 @@ class QuickPlot:
         cbar.ax.tick_params(labelsize = 2.0 * self.chartProp, length = 0)
         cbar.set_ticks([1, -1])
 
-    def qpKde(self, x, color, yUnits = 'f', xUnits = 's', bbox = (1.2, 0.9), legend = False, ax = None):
+    def qpDist(self, x, color, yUnits = 'f', xUnits = 'f', ax = None):
+        """
+
+        """
+        g = sns.distplot(a = x
+                        ,kde = True
+                        ,color = color
+                        ,axlabel = False
+                        ,ax = ax)
+
+        # Axis tick label formatting.
+        qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, yUnits = yUnits)
+        
+    def qpKde(self, x, color, yUnits = 'f', xUnits = 'f', ax = None):
         """
 
         """
         g = sns.kdeplot(data = x
                         ,shade = True
                         ,color = color
-                        ,legend = legend
+                        ,legend = None
                         ,ax = ax)
 
-        # Add legend to figure
-        # if legend:
-        #     plt.legend(loc = 'upper right'
-        #                 ,bbox_to_anchor = bbox
-        #                 ,ncol = 1
-        #                 ,frameon = True
-        #                 ,fontsize = 1.1 * self.chartProp
-        #                 )
-
-        # Axis tick label formatting.
-        qpUtil.qpUtilLabelFormatter(ax = ax, xSize = 1.333 * self.chartProp, yUnits = yUnits, xUnits = xUnits, ySize = 1.333 * self.chartProp)
         
-    def qpFacetNum(self, x, color, label, ax = None):
+        # Axis tick label formatting.
+        qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, yUnits = yUnits)
+
+    def qpBoxPlot(self, x, y, data, color = qpStyle.qpColorsHexMid, xUnits = 'f', ax = None):
+        """
+
+        """
+        g = sns.boxplot(x = x
+                        ,y = y
+                        ,hue = y
+                        ,data = data
+                        ,orient = 'h'
+                        ,palette = color
+                        ,ax = ax).set(
+                                    xlabel = None
+                                    ,ylabel = None
+                                )
+        plt.setp(ax.artists, alpha = 0.8)
+        
+        # Axis tick label formatting.
+        qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits)
+        plt.legend(bbox_to_anchor = (1.05, 1), loc = 2, borderaxespad = 0.)
+
+    def qpFacetNum(self, x, color, label, alpha = 0.8):
         """
         Info:
             Description:
@@ -619,9 +656,9 @@ class QuickPlot:
         plt.hist(x = x
                 ,color = color
                 ,label = label
-                ,alpha = 0.5
-                )        
-
+                ,alpha = alpha
+                )
+            
     def qpFacetCat(self, df, feature, yUnits = 'f', xUnits = 's', bbox = (1.2, 0.9), ax = None):       
 
         ixs = np.arange(df.shape[0])
@@ -650,7 +687,7 @@ class QuickPlot:
                     ,fontsize = 1.1 * self.chartProp
                     )
         # Axis tick label formatting.
-        qpUtil.qpUtilLabelFormatter(ax = ax, xSize = 1.333 * self.chartProp, yUnits = yUnits, xUnits = xUnits, ySize = 1.333 * self.chartProp)
+        qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, yUnits = yUnits)
         
 class MLEDA(QuickPlot):
 
@@ -768,7 +805,7 @@ class MLEDA(QuickPlot):
                         self.dfSideBySide(dfs = (uniSummDf, biSummDf), names = ['df 1', 'df2'])
                         
                         # Univariate plot
-                        ax = p.makeCanvas(title = 'Univariate\n-{}'.format(feature), yShift = 0.8, position = 121)
+                        ax = p.makeCanvas(title = 'Univariate\n* {}'.format(feature), yShift = 0.8, position = 121)
                         p.qpBarH(y = unique
                                 ,counts = unique_counts
                                 ,color = qpStyle.qpColorsHexMid[2]
@@ -779,7 +816,7 @@ class MLEDA(QuickPlot):
                                 )
                         
                         # Bivariate plot
-                        ax = p.makeCanvas(title = 'Faceted by target\n-{}'.format(feature), yShift = 0.8, position = 122)
+                        ax = p.makeCanvas(title = 'Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 122)
                         p.qpFacetCat(df = biSummDf
                                     ,feature = feature
                                     ,ax = ax)
@@ -792,14 +829,14 @@ class MLEDA(QuickPlot):
                         self.dfSideBySide(dfs = (describeDf, describeDf), names = ['df1', 'df1'])
 
                         # Univariate plot
-                        ax = p.makeCanvas(title = 'KDE - Univariate\n-{}'.format(feature), yShift = 0.8, position = 131)
-                        p.qpKde(self.X_[feature]
-                                ,color = qpStyle.qpColorsHexMid[0]
+                        ax = p.makeCanvas(title = 'Dist/KDE - Univariate\n* {}'.format(feature), yShift = 0.8, position = 141)
+                        p.qpDist(self.X_[feature]
+                                ,color = qpStyle.qpColorsHexMid[2]
                                 ,yUnits = 'ffff'
                                 ,ax = ax)
                         
                         # Bivariate kernel density plot
-                        ax = p.makeCanvas(title = 'KDE - Faceted by target\n-{}'.format(feature), yShift = 0.8, position = 132)
+                        ax = p.makeCanvas(title = 'KDE - Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 142)
                         for ix, labl in enumerate(np.unique(self.y_)):
                             p.qpKde(biDf[biDf[self.target[0]] == labl][feature]
                                     ,color = qpStyle.qpColorsHexMid[ix]
@@ -807,11 +844,19 @@ class MLEDA(QuickPlot):
                                     ,ax = ax)
                         
                         # Bivariate histogram
-                        ax = p.makeCanvas(title = 'Hist - Faceted by target\n-{}'.format(feature), yShift = 0.8, position = 133)
+                        ax = p.makeCanvas(title = 'Hist - Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 143)
                         for ix, labl in enumerate(np.unique(self.y_)):
                             p.qpFacetNum(biDf[biDf[self.target[0]] == labl][feature]
                                         ,color = qpStyle.qpColorsHexMid[ix]
-                                        ,label = labl)
+                                        ,label = labl
+                                        ,alpha = 0.4)
+
+                        # Boxplot histogram
+                        ax = p.makeCanvas(title = 'Boxplot - Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 144)
+                        p.qpBoxPlot(x = feature
+                                    ,y = self.target[0]
+                                    ,data = biDf
+                                    ,ax = ax)
 
                     # String / object features
                     elif k == 'object':
