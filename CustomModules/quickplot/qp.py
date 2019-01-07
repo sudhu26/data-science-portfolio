@@ -8,6 +8,10 @@ from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 import sklearn.metrics as metrics
 import sklearn.preprocessing as prepocessing
 
+from statsmodels.stats.weightstats import ztest
+from scipy import stats
+
+
 import quickplot.qpStyle as qpStyle
 import quickplot.qpUtil as qpUtil
 
@@ -319,20 +323,17 @@ class QuickPlot:
         # Show figure with tight layout.
         plt.tight_layout()    
     
-    def qpBar(self, x, counts, labelRotate = 0, log = False, yUnits = 'f', xUnits = 'f', ax = None):
+    def qpBar(self, x, counts, color = qpStyle.qpColorsHexMid[0], labelRotate = 0, yUnits = 'f', xUnits = None, ax = None):
         """
         Info:
             Description:
 
             Parameters:
-                x : Array
-                y : Array
-                xLabels : List
-                log : boolean, default = True
+
         """
         plt.bar(x = x
                 ,height = counts
-                ,color = qpStyle.qpColorsHexMid[0]
+                ,color = color
                 ,tick_label = x
                 ,alpha = 0.8
             )
@@ -341,9 +342,15 @@ class QuickPlot:
         
         # Axis tick label formatting.
         qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, yUnits = yUnits)
+
+        # Resize x-axis labels as needed
+        if len(x) > 10 and len(x) <= 20:
+            ax.tick_params(axis = 'x', colors = qpStyle.qpGrey, labelsize = 1.2 * self.chartProp)
+            
+        elif len(x) > 20:
+            ax.tick_params(axis = 'x', colors = qpStyle.qpGrey, labelsize = 0.6 * self.chartProp)
         
-    def qpBarH(self, y, counts, color = qpStyle.qpColorsHexMid[0], labelRotate = 45, log = False
-                , yUnits = 'f', xUnits = 'f', ax = None):
+    def qpBarH(self, y, counts, color = qpStyle.qpColorsHexMid[0], labelRotate = 45, yUnits = 'f', ax = None):
         """
         Info:
             Description:
@@ -363,7 +370,7 @@ class QuickPlot:
         plt.xticks(rotation = labelRotate)
         
         # Axis tick label formatting.
-        qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, yUnits = yUnits)
+        qpUtil.qpUtilLabelFormatter(ax = ax, yUnits = yUnits)
 
     def qpConfusionMatrix(self, yTest, yPred, ax = None):
         """
@@ -595,7 +602,7 @@ class QuickPlot:
         cbar.ax.tick_params(labelsize = 2.0 * self.chartProp, length = 0)
         cbar.set_ticks([1, -1])
 
-    def qpDist(self, x, color, yUnits = 'f', xUnits = 'f', ax = None):
+    def qpDist(self, x, color, yUnits = 'f', xUnits = 'f', fit = None, ax = None):
         """
 
         """
@@ -603,6 +610,7 @@ class QuickPlot:
                         ,kde = True
                         ,color = color
                         ,axlabel = False
+                        ,fit = fit
                         ,ax = ax)
 
         # Axis tick label formatting.
@@ -659,7 +667,7 @@ class QuickPlot:
                 ,alpha = alpha
                 )
             
-    def qpFacetCat(self, df, feature, yUnits = 'f', xUnits = 's', bbox = (1.2, 0.9), ax = None):       
+    def qpFacetCat(self, df, feature, labelRotate = 0, yUnits = 'f', xUnits = 's', bbox = (1.2, 0.9), ax = None):       
 
         ixs = np.arange(df.shape[0])
         bar_width = 0.35
@@ -679,6 +687,9 @@ class QuickPlot:
         # Custom X-tick labels
         plt.xticks(ixs[:df.shape[0]] + bar_width / 2, df.iloc[:,0].values)
         
+        # Rotate labels 
+        plt.xticks(rotation = labelRotate)
+                
         # Add legend to figure
         plt.legend(loc = 'upper right'
                     ,bbox_to_anchor = bbox
@@ -689,10 +700,39 @@ class QuickPlot:
         # Axis tick label formatting.
         qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, yUnits = yUnits)
         
+        # Resize x-axis labels as needed
+        if len(featureDict[feature]) > 10 and len(featureDict[feature]) <= 20:
+            ax.tick_params(axis = 'x', colors = qpStyle.qpGrey, labelsize = 1.2 * self.chartProp)
+            
+        elif len(featureDict[feature]) > 20:
+            ax.tick_params(axis = 'x', colors = qpStyle.qpGrey, labelsize = 0.6 * self.chartProp)
+    
+    def qpProbPlot(self, x, plot):
+        """
+
+        """
+        stats.probplot(x, plot = plot)
+        
+        # Override title labels
+        plot.set_title('')
+        plt.xlabel('')
+        plt.ylabel('')
+        
+        # plot.get_lines()[0].set_marker('p')
+        plot.get_lines()[0].set_markerfacecolor(qpStyle.qpWhite)
+        plot.get_lines()[0].set_color(qpStyle.qpColorsHexMid[2])
+        plot.get_lines()[0].set_markersize(2.0)
+
+        plot.get_lines()[1].set_linewidth(2.0)
+        plot.get_lines()[1].set_color(qpStyle.qpGrey)
+
+
+
+
 class MLEDA(QuickPlot):
 
 
-    def __init__(self, data, removeFeatures = [], skipFeatures = [], dateFeatures = [], target = None):
+    def __init__(self, data, removeFeatures = [], overrideCat = None, overrideNum = None, dateFeatures = None, target = None, targetType = None):
         """
         Info:
             Description:
@@ -702,26 +742,35 @@ class MLEDA(QuickPlot):
                     Input data
                 removeFeatures : list, default = []
                     Features to be completely removed from dataset
-                skipFeatures : list, default = []
-                    Features to be skipped
-                dateFeatures : list, default = []
-                    Features comprised of date values
-                target : list, default = []
+                overrideCat : list, default = None
+                    Preidentified categorical features that would otherwise be labeled as numeric
+                overrideCNum : list, default = None
+                    Preidentified numerical features that would otherwise be labeled as categorical
+                dateFeatures : list, default = None
+                    Features comprised of date values, which will need to be handled differently
+                target : list, default = None
                     Name of column containing dependent variable
+                targetType : list, default = None
+                    Target variable type, either 'categorical' or 'numerical
             Attributes:
                 X_ : Pandas DataFrame
-
+                    Independent variables
                 y_ : Pandas Series
-
+                    Dependent variables
                 featuresByDtype_ : dict
+                    Dictionary containing two keys, numerical and categorical, each paired with a
+                    value that is a list of column names that are of that feature type - numerical or categorical.
 
         """
         self.data = data
         self.removeFeatures = removeFeatures
-        self.skipFeatures = skipFeatures
+        self.overrideCat = overrideCat
+        self.overrideNum = overrideNum
         self.dateFeatures = dateFeatures
         self.target = target
+        self.targetType = targetType
 
+        # Execute method qpMeasLevel
         if self.target is not None:
             self.X_, self.y_, self.featureByDtype_ = self.qpMeasLevel()
         else:
@@ -731,108 +780,127 @@ class MLEDA(QuickPlot):
         """
         Info:
             Description:
-                Capture independent variable in X.
-                If provided, capture dependent variable y.
-                Determine level of measurement for each feature in X.
+                Isolate independent variables in X_.
+                If provided, isolate dependent variable y_.
+                Determine level of measurement for each feature as categorical, numerical or date.
         """
-        # Identify target from features
+        ### Identify target from features
         if self.target is not None:
             self.y_ = self.data[self.target]
             self.X_ = self.data.drop(self.removeFeatures + self.target, axis = 1)
         else:
             self.X_ = self.data.drop(self.removeFeatures, axis = 1)
             
+        
+        ### Add categorical and numerical keys, and any associated overrides
         self.featureByDtype_ = {}
-        for c in [c for c in self.X_.columns if c not in self.skipFeatures]:
-            # Identify feature type
-            if len(self.X_[c].unique()) == 2:
-                dataType = 'bool'
-            elif c in self.dateFeatures:
-                dataType = 'date'
-            else:
-                dataType = str(self.X_[c].dtype)
+        
+        # Categorical
+        if self.overrideCat is None:
+            self.featureByDtype_['categorical'] = []
+        else:
+            self.featureByDtype_['categorical'] = self.overrideCat
+        
+        # Numeric
+        if self.overrideNum is None:
+            self.featureByDtype_['numerical'] = []
+        else:
+            self.featureByDtype_['numerical'] = self.overrideNum
+        
+        # Date
+        if self.dateFeatures is None:
+            self.featureByDtype_['date'] = []
+        else:
+            self.featureByDtype_['date'] = self.dateFeatures
+        
+        # Combined dictionary values for later filtering
+        handled = [i for i in sum(self.featureByDtype_.values(), [])]
 
-            # Add feature to dictionary
-            if dataType not in self.featureByDtype_.keys():
-                self.featureByDtype_[dataType] = [c]
-            else:
-                self.featureByDtype_[dataType].append(c)
-
+        
+        ### Categorize remaining columns
+        for c in [i for i in self.X_.columns if i not in handled]:
+            
+            # Identify feature type based on column data type
+            if str(self.X_[c].dtype).startswith(('int','float')):
+                self.featureByDtype_['numerical'].append(c)
+            elif str(self.X_[c].dtype).startswith(('object')):
+                self.featureByDtype_['categorical'].append(c)
+        
+        # Return objects
         if self.target is not None:
             return self.X_, self.y_, self.featureByDtype_
         else:
             return self.X_, self.featureByDtype_
 
-    def featureSummary(self, skipDtype = ['date']):
+    def featureSummary(self):
         """
+        Info:
+            Description:
 
         """        
-        # Iterate through each feature type and associated feature list
+        ### Iterate through each feature type and associated feature list
         for k, v in self.featureByDtype_.items():
-            if k not in skipDtype:
-                print('**********\n{} columns'.format(k))
+            
+            ### Numerical feature summary
+            if k == 'numerical':
+                print('***********************************************************\n{} columns \n***********************************************************\n'.format(k))
                 
                 # Iterate through each feature within a feature type
                 for feature in v:                
                     
-                    # Univariate summary
-                    uniSummDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion'])
-                    unique, unique_counts = np.unique(self.X_[feature], return_counts = True)
-                    for i, j in zip(unique, unique_counts):
-                        uniSummDf = uniSummDf.append({feature : i
-                                                ,'Count' : j
-                                                ,'Proportion' : j / np.sum(unique_counts) * 100
-                                                }
-                                            ,ignore_index = True)
-                    
-                    # Bivariate summary
-                    biDf = pd.DataFrame(self.X_[feature]).join(self.y_)
-                    biSummDf = pd.DataFrame(self.X_[feature]).join(self.y_)\
-                                        .groupby([feature] + self.y_.columns.tolist()).size().reset_index()\
-                                        .pivot(columns = self.y_.columns.tolist()[0], index = feature, values = 0)
-                    multiIndex = biSummDf.columns
-                    singleIndex = pd.Index([i for i in multiIndex.tolist()])
-                    biSummDf.columns = singleIndex
-                    biSummDf.reset_index(inplace = True)
-                    
                     # Instantiate charting object
                     p = QuickPlot(fig = plt.figure(), chartProp = 15, plotOrientation = 'wide')
-                    
-                    # Boolean feautes
-                    if k in ['bool']:
-                        
-                        # Display summary tables
-                        self.dfSideBySide(dfs = (uniSummDf, biSummDf), names = ['df 1', 'df2'])
-                        
-                        # Univariate plot
-                        ax = p.makeCanvas(title = 'Univariate\n* {}'.format(feature), yShift = 0.8, position = 121)
-                        p.qpBarH(y = unique
-                                ,counts = unique_counts
-                                ,color = qpStyle.qpColorsHexMid[2]
-                                ,labelRotate = 45
-                                ,xUnits = 'f'
-                                ,yUnits = 's'
-                                ,ax = ax
-                                )
-                        
-                        # Bivariate plot
-                        ax = p.makeCanvas(title = 'Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 122)
-                        p.qpFacetCat(df = biSummDf
-                                    ,feature = feature
-                                    ,ax = ax)
 
-                    # Numeric features
-                    elif k in ['int32','int64','float32','float64']:
+                    ### vs. numerical target variable
+                    if self.targetType == 'numerical':
+
+                        # Univariate summary
+                        uniSummDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion'])
+                        unique, unique_counts = np.unique(self.X_[feature], return_counts = True)
+                        for i, j in zip(unique, unique_counts):
+                            uniSummDf = uniSummDf.append({feature : i
+                                                    ,'Count' : j
+                                                    ,'Proportion' : j / np.sum(unique_counts) * 100
+                                                    }
+                                                ,ignore_index = True)
                         
+                        # Bivariate summary
+                        biDf = pd.DataFrame(self.X_[feature]).join(self.y_)
+                        biSummDf = pd.DataFrame(self.X_[feature]).join(self.y_)\
+                                            .groupby([feature] + self.y_.columns.tolist()).size().reset_index()\
+                                            .pivot(columns = self.y_.columns.tolist()[0], index = feature, values = 0)
+                        multiIndex = biSummDf.columns
+                        singleIndex = pd.Index([i for i in multiIndex.tolist()])
+                        biSummDf.columns = singleIndex
+                        biSummDf.reset_index(inplace = True)
+
                         # Display summary tables
                         describeDf = pd.DataFrame(biDf[feature].describe()).reset_index()
-                        self.dfSideBySide(dfs = (describeDf, describeDf), names = ['df1', 'df1'])
+                        if len(np.unique(self.y_)) == 2:
+                            s1 = biDf[biDf[self.target[0]] == biDf[self.target[0]].unique()[0]][feature]
+                            s2 = biDf[biDf[self.target[0]] == biDf[self.target[0]].unique()[1]][feature]
+                            if len(s1) > 30 and len(s2) > 30:
+                                z, pVal = ztest(s1, s2)
+                                
+                                statTestDf = pd.DataFrame(data = [{'z-test statistic' : z, 'p-value' : pVal}]
+                                                            ,columns = ['z-test statistic','p-value']
+                                                            ,index = [feature]).round(4)
+                            else:
+                                t, pVal = stats.ttest_ind(s1, s2)
+                                
+                                statTestDf = pd.DataFrame(data = [{'t-test statistic' : t, 'p-value' : pVal}]
+                                                            ,columns = ['t-test statistic','p-value']
+                                                            ,index = [feature]).round(4)
+                            self.dfSideBySide(dfs = (describeDf, statTestDf), names = ['Descriptive stats', 'Statistical test'])
+                        else:
+                            display(describeDf)
 
                         # Univariate plot
                         ax = p.makeCanvas(title = 'Dist/KDE - Univariate\n* {}'.format(feature), yShift = 0.8, position = 141)
                         p.qpDist(self.X_[feature]
                                 ,color = qpStyle.qpColorsHexMid[2]
                                 ,yUnits = 'ffff'
+                                ,fit = stats.norm
                                 ,ax = ax)
                         
                         # Bivariate kernel density plot
@@ -858,17 +926,211 @@ class MLEDA(QuickPlot):
                                     ,data = biDf
                                     ,ax = ax)
 
-                    # String / object features
-                    elif k == 'object':
-                        p.qpBar(x = unique
+                        plt.show()
+                    
+                    ### vs. categorical target variable
+                    elif self.targetType == 'categorical':
+                        
+                        # Bivariate roll-up table
+                        biDf = pd.DataFrame(self.X_[feature]).join(self.y_)
+                        biSummDf = pd.DataFrame(self.X_[feature]).join(self.y_)\
+                                            .groupby([feature] + self.y_.columns.tolist()).size().reset_index()\
+                                            .pivot(columns = self.y_.columns.tolist()[0], index = feature, values = 0)
+                        multiIndex = biSummDf.columns
+                        singleIndex = pd.Index([i for i in multiIndex.tolist()])
+                        biSummDf.columns = singleIndex
+                        biSummDf.reset_index(inplace = True)
+                        
+                        # Bivariate summary statistics
+                        biSummStatsDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion', 'Mean', 'Std'])
+                        
+                        for labl in np.unique(self.y_):
+                            featureSlice = biDf[biDf[self.target[0]] == labl][feature]
+                        
+                            biSummStatsDf = biSummStatsDf.append({feature : labl
+                                                                    ,'Count' : len(featureSlice)
+                                                                    ,'Proportion' : j / np.sum(unique_counts) * 100
+                                                                    #,'Mean' : 
+                                                                    }
+                                                                ,ignore_index = True)
+                        display(biSummStatsDf)
+                        
+
+                        # Display summary tables
+                        describeDf = pd.DataFrame(biDf[feature].describe()).reset_index()
+                        if len(np.unique(self.y_)) == 2:
+                            s1 = biDf[biDf[self.target[0]] == biDf[self.target[0]].unique()[0]][feature]
+                            s2 = biDf[biDf[self.target[0]] == biDf[self.target[0]].unique()[1]][feature]
+                            if len(s1) > 30 and len(s2) > 30:
+                                z, pVal = ztest(s1, s2)
+                                
+                                statTestDf = pd.DataFrame(data = [{'z-test statistic' : z, 'p-value' : pVal}]
+                                                            ,columns = ['z-test statistic','p-value']
+                                                            ,index = [feature]).round(4)
+                            else:
+                                t, pVal = stats.ttest_ind(s1, s2)
+                                
+                                statTestDf = pd.DataFrame(data = [{'t-test statistic' : t, 'p-value' : pVal}]
+                                                            ,columns = ['t-test statistic','p-value']
+                                                            ,index = [feature]).round(4)
+                            self.dfSideBySide(dfs = (describeDf, statTestDf), names = ['Descriptive stats', 'Statistical test'])
+                        else:
+                            display(describeDf)
+
+                        # Univariate plot
+                        ax = p.makeCanvas(title = 'Dist/KDE - Univariate\n* {}'.format(feature), yShift = 0.8, position = 151)
+                        p.qpDist(self.X_[feature]
+                                ,color = qpStyle.qpColorsHexMid[2]
+                                ,yUnits = 'ffff'
+                                ,ax = ax)
+                        
+                        # Probability plot
+                        ax = p.makeCanvas(title = 'Probability plot\n* {}'.format(feature), yShift = 0.8, position = 152)
+                        p.qpProbPlot(x = self.X_[feature]
+                                    ,plot = ax)
+                        
+                        # Bivariate kernel density plot
+                        ax = p.makeCanvas(title = 'KDE - Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 153)
+                        for ix, labl in enumerate(np.unique(self.y_)):
+                            p.qpKde(biDf[biDf[self.target[0]] == labl][feature]
+                                    ,color = qpStyle.qpColorsHexMid[ix]
+                                    ,yUnits = 'ffff'
+                                    ,ax = ax)
+                        
+                        # Bivariate histogram
+                        ax = p.makeCanvas(title = 'Hist - Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 154)
+                        for ix, labl in enumerate(np.unique(self.y_)):
+                            p.qpFacetNum(biDf[biDf[self.target[0]] == labl][feature]
+                                        ,color = qpStyle.qpColorsHexMid[ix]
+                                        ,label = labl
+                                        ,alpha = 0.4)
+
+                        # Boxplot histogram
+                        ax = p.makeCanvas(title = 'Boxplot - Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 155)
+                        p.qpBoxPlot(x = feature
+                                    ,y = self.target[0]
+                                    ,data = biDf
+                                    ,ax = ax)
+
+
+
+                        plt.show()
+
+            ### Categorical feature summary
+            elif k == 'categorical':
+                print('***********************************************************\n{} columns \n***********************************************************\n'.format(k))
+            
+                # Iterate through each feature within a feature type
+                for feature in v:                
+                    
+                    # Instantiate charting object
+                    p = QuickPlot(fig = plt.figure(), chartProp = 15, plotOrientation = 'wide')
+
+                    ### vs. numerical target variable
+                    if self.targetType == 'numerical':
+                        
+                        # Univariate summary
+                        uniSummDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion'])
+                        unique, unique_counts = np.unique(self.X_[feature], return_counts = True)
+                        for i, j in zip(unique, unique_counts):
+                            uniSummDf = uniSummDf.append({feature : i
+                                                    ,'Count' : j
+                                                    ,'Proportion' : j / np.sum(unique_counts) * 100
+                                                    }
+                                                ,ignore_index = True)
+                        uniSummDf = uniSummDf.sort_values(by = ['Proportion'], ascending = False)
+                        
+                        # Bivariate summary
+                        biDf = pd.DataFrame(self.X_[feature]).join(self.y_)
+                        biSummDf = pd.DataFrame(self.X_[feature]).join(self.y_)\
+                                            .groupby([feature] + self.y_.columns.tolist()).size().reset_index()\
+                                            .pivot(columns = self.y_.columns.tolist()[0], index = feature, values = 0)
+                        multiIndex = biSummDf.columns
+                        singleIndex = pd.Index([i for i in multiIndex.tolist()])
+                        biSummDf.columns = singleIndex
+                        biSummDf.reset_index(inplace = True)
+
+                        # Instantiate charting object
+                        p = QuickPlot(fig = plt.figure(), chartProp = 15, plotOrientation = 'wide')
+                        
+                        # Display summary tables
+                        self.dfSideBySide(dfs = (uniSummDf, biSummDf), names = ['Univariate summary', 'Bivariate summary'])
+                        
+                        # Univariate plot
+                        ax = p.makeCanvas(title = 'Univariate\n* {}'.format(feature), yShift = 0.8, position = 121)
+                        p.qpBarH(y = unique
                                 ,counts = unique_counts
+                                ,color = qpStyle.qpColorsHexMid[2]
                                 ,labelRotate = 45
-                                ,xUnits = 's'
-                                ,yUnits = 'f'
+                                ,xUnits = 'f'
+                                ,yUnits = 's'
                                 ,ax = ax
                                 )
-                    plt.show()
+                        
+                        # Bivariate plot
+                        ax = p.makeCanvas(title = 'Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 122)
+                        p.qpFacetCat(df = biSummDf
+                                    ,feature = feature
+                                    ,ax = ax)
+                        
+                        plt.show()
+                    
+                    ### vs. categorical target variable
+                    elif self.targetType == 'categorical':
 
+                        # Univariate summary
+                        uniSummDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion'])
+                        unique, unique_counts = np.unique(self.X_[feature], return_counts = True)
+                        for i, j in zip(unique, unique_counts):
+                            uniSummDf = uniSummDf.append({feature : i
+                                                    ,'Count' : j
+                                                    ,'Proportion' : j / np.sum(unique_counts) * 100
+                                                    }
+                                                ,ignore_index = True)
+                        uniSummDf = uniSummDf.sort_values(by = ['Proportion'], ascending = False)
+                        
+                        # Bivariate summary
+                        biDf = pd.DataFrame(self.X_[feature]).join(self.y_)
+                        biSummDf = pd.DataFrame(self.X_[feature]).join(self.y_)\
+                                            .groupby([feature] + self.y_.columns.tolist()).size().reset_index()\
+                                            .pivot(columns = self.y_.columns.tolist()[0], index = feature, values = 0)
+                        multiIndex = biSummDf.columns
+                        singleIndex = pd.Index([i for i in multiIndex.tolist()])
+                        biSummDf.columns = singleIndex
+                        biSummDf.reset_index(inplace = True)
+
+                        # Instantiate charting object
+                        p = QuickPlot(fig = plt.figure(), chartProp = 15, plotOrientation = 'wide')
+                        
+                        # Display summary tables
+                        self.dfSideBySide(dfs = (uniSummDf, biSummDf), names = ['Univariate summary', 'Biivariate summary'])
+                        
+                        # Univariate plot
+                        ax = p.makeCanvas(title = 'Univariate\n* {}'.format(feature), yShift = 0.8, position = 121)
+                        
+                        p.qpBar(x = unique
+                                ,counts = unique_counts
+                                ,labelRotate = 90 if len(unique) >= 4 else 0
+                                ,color = qpStyle.qpColorsHexMid[2]
+                                ,yUnits = 'f'
+                                ,ax = ax)                        
+                        
+                        # Bivariate plot
+                        ax = p.makeCanvas(title = 'Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 122)
+                        p.qpFacetCat(df = biSummDf
+                                    ,feature = feature
+                                    ,labelRotate = 90 if len(unique) >= 4 else 0
+                                    ,ax = ax)
+
+                        plt.show()
+
+    def dateTransformer(self):
+        pass
+        # day of week
+        # hour of day
+        # morning/afternoon/evening/graveyard
+        # weekend vs weekday
+    
     def featureFormatter(self):
         pass
 
