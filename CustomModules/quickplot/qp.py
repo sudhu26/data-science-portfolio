@@ -323,7 +323,7 @@ class QuickPlot:
         # Show figure with tight layout.
         plt.tight_layout()    
     
-    def qpBar(self, x, counts, color = qpStyle.qpColorsHexMid[0], labelRotate = 0, yUnits = 'f', xUnits = None, ax = None):
+    def qpBarV(self, x, counts, color = qpStyle.qpColorsHexMid[0], labelRotate = 0, yUnits = 'f', xUnits = None, ax = None):
         """
         Info:
             Description:
@@ -630,7 +630,27 @@ class QuickPlot:
         # Axis tick label formatting.
         qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, yUnits = yUnits)
 
-    def qpBoxPlot(self, x, y, data, color = qpStyle.qpColorsHexMid, xUnits = 'f', ax = None):
+    def qpBoxPlotV(self, x, y, data, color = qpStyle.qpColorsHexMid, yUnits = 'f', ax = None):
+        """
+
+        """
+        g = sns.boxplot(x = x
+                        ,y = y
+                        ,hue = x
+                        ,data = data
+                        ,orient = 'v'
+                        # ,palette = color
+                        ,ax = ax).set(
+                                    xlabel = None
+                                    ,ylabel = None
+                                )
+        plt.setp(ax.artists, alpha = 0.8)
+        
+        # Axis tick label formatting.
+        qpUtil.qpUtilLabelFormatter(ax = ax, yUnits = yUnits)
+        plt.legend(bbox_to_anchor = (1.05, 1), loc = 2, borderaxespad = 0.)
+
+    def qpBoxPlotH(self, x, y, data, color = qpStyle.qpColorsHexMid, xUnits = 'f', ax = None):
         """
 
         """
@@ -760,7 +780,6 @@ class MLEDA(QuickPlot):
                 featuresByDtype_ : dict
                     Dictionary containing two keys, numerical and categorical, each paired with a
                     value that is a list of column names that are of that feature type - numerical or categorical.
-
         """
         self.data = data
         self.removeFeatures = removeFeatures
@@ -800,6 +819,12 @@ class MLEDA(QuickPlot):
             self.featureByDtype_['categorical'] = []
         else:
             self.featureByDtype_['categorical'] = self.overrideCat
+
+            # Change data type to object
+            for col in self.overrideCat:
+                if self.X_[col].dtype != 'object':
+                    self.X_[col] = self.X_[col].apply(str)
+        
         
         # Numeric
         if self.overrideNum is None:
@@ -825,8 +850,8 @@ class MLEDA(QuickPlot):
                 self.featureByDtype_['numerical'].append(c)
             elif str(self.X_[c].dtype).startswith(('object')):
                 self.featureByDtype_['categorical'].append(c)
-        
-        # Return objects
+
+        ### Return objects
         if self.target is not None:
             return self.X_, self.y_, self.featureByDtype_
         else:
@@ -856,7 +881,7 @@ class MLEDA(QuickPlot):
 
                         # Univariate summary
                         uniSummDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion'])
-                        unique, unique_counts = np.unique(self.X_[feature], return_counts = True)
+                        unique, unique_counts = np.unique(self.X_[self.X_[feature].notnull()][feature], return_counts = True)
                         for i, j in zip(unique, unique_counts):
                             uniSummDf = uniSummDf.append({feature : i
                                                     ,'Count' : j
@@ -897,34 +922,22 @@ class MLEDA(QuickPlot):
 
                         # Univariate plot
                         ax = p.makeCanvas(title = 'Dist/KDE - Univariate\n* {}'.format(feature), yShift = 0.8, position = 141)
-                        p.qpDist(self.X_[feature]
+                        p.qpDist(self.X_[feature].notnull()
                                 ,color = qpStyle.qpColorsHexMid[2]
                                 ,yUnits = 'ffff'
                                 ,fit = stats.norm
                                 ,ax = ax)
                         
-                        # Bivariate kernel density plot
-                        ax = p.makeCanvas(title = 'KDE - Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 142)
-                        for ix, labl in enumerate(np.unique(self.y_)):
-                            p.qpKde(biDf[biDf[self.target[0]] == labl][feature]
-                                    ,color = qpStyle.qpColorsHexMid[ix]
-                                    ,yUnits = 'ffff'
-                                    ,ax = ax)
-                        
-                        # Bivariate histogram
-                        ax = p.makeCanvas(title = 'Hist - Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 143)
-                        for ix, labl in enumerate(np.unique(self.y_)):
-                            p.qpFacetNum(biDf[biDf[self.target[0]] == labl][feature]
-                                        ,color = qpStyle.qpColorsHexMid[ix]
-                                        ,label = labl
-                                        ,alpha = 0.4)
+                        # Scatter plot
 
-                        # Boxplot histogram
-                        ax = p.makeCanvas(title = 'Boxplot - Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 144)
-                        p.qpBoxPlot(x = feature
-                                    ,y = self.target[0]
-                                    ,data = biDf
-                                    ,ax = ax)
+                        ax = p.makeCanvas(title = '', xLabel = '', yLabel = '', yShift = 0.8, position = 142)
+                        p.qp2dScatter(x = self.X_[feature].notnull()
+                                    ,y = self.y_[self.X_[feature].notnull()]
+                                    # ,color = 
+                                    ,xUnits = 'f'
+                                    ,yUnits = 'f'
+                                    ,ax = ax
+                                    )
 
                         plt.show()
                     
@@ -942,22 +955,22 @@ class MLEDA(QuickPlot):
                         biSummDf.reset_index(inplace = True)
                         
                         # Bivariate summary statistics
-                        biSummStatsDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion', 'Mean', 'Std'])
+                        biSummStatsDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion', 'Mean', 'StdDv'])
                         
                         for labl in np.unique(self.y_):
                             featureSlice = biDf[biDf[self.target[0]] == labl][feature]
                         
                             biSummStatsDf = biSummStatsDf.append({feature : labl
                                                                     ,'Count' : len(featureSlice)
-                                                                    ,'Proportion' : j / np.sum(unique_counts) * 100
-                                                                    #,'Mean' : 
+                                                                    ,'Proportion' : len(featureSlice) / len(biDf[feature]) * 100
+                                                                    ,'Mean' : np.mean(featureSlice)
+                                                                    ,'StdDv' : np.std(featureSlice)
                                                                     }
                                                                 ,ignore_index = True)
-                        display(biSummStatsDf)
                         
-
                         # Display summary tables
                         describeDf = pd.DataFrame(biDf[feature].describe()).reset_index()
+                        describeDf = describeDf.rename(columns = {'index' : ''})
                         if len(np.unique(self.y_)) == 2:
                             s1 = biDf[biDf[self.target[0]] == biDf[self.target[0]].unique()[0]][feature]
                             s2 = biDf[biDf[self.target[0]] == biDf[self.target[0]].unique()[1]][feature]
@@ -965,18 +978,20 @@ class MLEDA(QuickPlot):
                                 z, pVal = ztest(s1, s2)
                                 
                                 statTestDf = pd.DataFrame(data = [{'z-test statistic' : z, 'p-value' : pVal}]
-                                                            ,columns = ['z-test statistic','p-value']
+                                                            ,columns = ['z-test statistic', 'p-value']
                                                             ,index = [feature]).round(4)
                             else:
                                 t, pVal = stats.ttest_ind(s1, s2)
                                 
                                 statTestDf = pd.DataFrame(data = [{'t-test statistic' : t, 'p-value' : pVal}]
-                                                            ,columns = ['t-test statistic','p-value']
+                                                            ,columns = ['t-test statistic', 'p-value']
                                                             ,index = [feature]).round(4)
-                            self.dfSideBySide(dfs = (describeDf, statTestDf), names = ['Descriptive stats', 'Statistical test'])
+                            self.dfSideBySide(dfs = (describeDf, biSummStatsDf, statTestDf)
+                                                ,names = ['Univariate stats', 'Bivariate stats', 'Statistical test'])
                         else:
-                            display(describeDf)
-
+                            self.dfSideBySide(dfs = (describeDf, biSummStatsDf)
+                                                ,names = ['Descriptive stats', 'Bivariate stats'])
+                            
                         # Univariate plot
                         ax = p.makeCanvas(title = 'Dist/KDE - Univariate\n* {}'.format(feature), yShift = 0.8, position = 151)
                         p.qpDist(self.X_[feature]
@@ -1007,12 +1022,10 @@ class MLEDA(QuickPlot):
 
                         # Boxplot histogram
                         ax = p.makeCanvas(title = 'Boxplot - Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 155)
-                        p.qpBoxPlot(x = feature
+                        p.qpBoxPlotH(x = feature
                                     ,y = self.target[0]
                                     ,data = biDf
                                     ,ax = ax)
-
-
 
                         plt.show()
 
@@ -1029,9 +1042,11 @@ class MLEDA(QuickPlot):
                     ### vs. numerical target variable
                     if self.targetType == 'numerical':
                         
+                        print(feature)
+
                         # Univariate summary
                         uniSummDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion'])
-                        unique, unique_counts = np.unique(self.X_[feature], return_counts = True)
+                        unique, unique_counts = np.unique(self.X_[self.X_[feature].notnull()][feature], return_counts = True)
                         for i, j in zip(unique, unique_counts):
                             uniSummDf = uniSummDf.append({feature : i
                                                     ,'Count' : j
@@ -1041,37 +1056,32 @@ class MLEDA(QuickPlot):
                         uniSummDf = uniSummDf.sort_values(by = ['Proportion'], ascending = False)
                         
                         # Bivariate summary
-                        biDf = pd.DataFrame(self.X_[feature]).join(self.y_)
-                        biSummDf = pd.DataFrame(self.X_[feature]).join(self.y_)\
-                                            .groupby([feature] + self.y_.columns.tolist()).size().reset_index()\
-                                            .pivot(columns = self.y_.columns.tolist()[0], index = feature, values = 0)
-                        multiIndex = biSummDf.columns
-                        singleIndex = pd.Index([i for i in multiIndex.tolist()])
-                        biSummDf.columns = singleIndex
-                        biSummDf.reset_index(inplace = True)
+                        # biDf = pd.DataFrame(self.X_[feature]).join(self.y_)
+                        # biSummDf = pd.DataFrame(self.X_[feature]).join(self.y_)\
+                        #                     .groupby([feature] + self.y_.columns.tolist()).size().reset_index()\
+                        #                     .pivot(columns = self.y_.columns.tolist()[0], index = feature, values = 0)
+                        # multiIndex = biSummDf.columns
+                        # singleIndex = pd.Index([i for i in multiIndex.tolist()])
+                        # biSummDf.columns = singleIndex
+                        # biSummDf.reset_index(inplace = True)
 
                         # Instantiate charting object
                         p = QuickPlot(fig = plt.figure(), chartProp = 15, plotOrientation = 'wide')
                         
                         # Display summary tables
-                        self.dfSideBySide(dfs = (uniSummDf, biSummDf), names = ['Univariate summary', 'Bivariate summary'])
+                        # self.dfSideBySide(dfs = (uniSummDf, biSummDf), names = ['Univariate summary', 'Bivariate summary'])
                         
                         # Univariate plot
                         ax = p.makeCanvas(title = 'Univariate\n* {}'.format(feature), yShift = 0.8, position = 121)
-                        p.qpBarH(y = unique
+                        p.qpBarV(x = unique
                                 ,counts = unique_counts
+                                ,labelRotate = 90 if len(unique) >= 4 else 0
                                 ,color = qpStyle.qpColorsHexMid[2]
-                                ,labelRotate = 45
-                                ,xUnits = 'f'
-                                ,yUnits = 's'
-                                ,ax = ax
-                                )
-                        
-                        # Bivariate plot
-                        ax = p.makeCanvas(title = 'Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 122)
-                        p.qpFacetCat(df = biSummDf
-                                    ,feature = feature
-                                    ,ax = ax)
+                                ,yUnits = 'f'
+                                ,ax = ax)                 
+                                                
+                        # Bivariate box plot
+                        # ax = p.makeCanvas(title = 'Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 122)
                         
                         plt.show()
                     
@@ -1080,7 +1090,7 @@ class MLEDA(QuickPlot):
 
                         # Univariate summary
                         uniSummDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion'])
-                        unique, unique_counts = np.unique(self.X_[feature], return_counts = True)
+                        unique, unique_counts = np.unique(self.X_[self.X_[feature].notnull()][feature], return_counts = True)
                         for i, j in zip(unique, unique_counts):
                             uniSummDf = uniSummDf.append({feature : i
                                                     ,'Count' : j
@@ -1108,7 +1118,7 @@ class MLEDA(QuickPlot):
                         # Univariate plot
                         ax = p.makeCanvas(title = 'Univariate\n* {}'.format(feature), yShift = 0.8, position = 121)
                         
-                        p.qpBar(x = unique
+                        p.qpBarV(x = unique
                                 ,counts = unique_counts
                                 ,labelRotate = 90 if len(unique) >= 4 else 0
                                 ,color = qpStyle.qpColorsHexMid[2]
