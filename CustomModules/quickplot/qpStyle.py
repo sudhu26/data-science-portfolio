@@ -1,4 +1,6 @@
 import seaborn as sns
+import matplotlib.cm
+import matplotlib.colors
 
 qpColorsHexLight = ['#8BA4D9', '#D8F894', '#FFC799', '#E78BC1', '#BC86D9', '#7DD1D1']
 qpColorsHexMidLight = ['#466DC1', '#BCF347', '#FF9C4B', '#D84099', '#9340C1', '#35B4B4']
@@ -24,6 +26,13 @@ qpMarkers = ('s', 'o', 'v', 'x', '^')
         
 qpWhite = (255 / 255, 255 / 255, 255 / 255)
 qpGrey = (105 / 255, 105 / 255, 105 / 255)
+
+def genCmap(nColors, colorList):
+    cmap = matplotlib.colors.LinearSegmentedColormap.from_list('', colorList)
+    matplotlib.cm.register_cmap("mycolormap", cmap)
+    cpal = sns.color_palette("mycolormap", n_colors = nColors, desat = 1.0)
+    return cpal
+
 
 # rc parameters
 rcGrey = {'axes.titlesize' : 50.0

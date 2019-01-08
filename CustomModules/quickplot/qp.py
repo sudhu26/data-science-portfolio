@@ -98,7 +98,7 @@ class QuickPlot:
         plt.ylabel(yLabel, fontsize = 1.667 * self.chartProp, labelpad = 1.667 * self.chartProp, position = (1.0, yShift))
         return ax
 
-    def qp2dScatter(self, x, y, df = None, xUnits = 'f', yUnits = 'f', plotBuffer = True
+    def qp2dScatter(self, x, y, df = None, xUnits = 'f', yUnits = 'f', plotBuffer = True, size = 10
                     , axisLimits = True, color = qpStyle.qpGrey, facecolor = 'w', ax = None):
         """
         Info:
@@ -138,7 +138,7 @@ class QuickPlot:
         plt.scatter(x = x
                     ,y = y
                     ,color = color
-                    ,s = 10 * self.chartProp
+                    ,s = size * self.chartProp
                     ,alpha = 0.7
                     ,facecolor = facecolor
                     ,linewidth = 0.167 * self.chartProp
@@ -630,26 +630,35 @@ class QuickPlot:
         # Axis tick label formatting.
         qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, yUnits = yUnits)
 
-    def qpBoxPlotV(self, x, y, data, color = qpStyle.qpColorsHexMid, yUnits = 'f', ax = None):
+    def qpBoxPlotV(self, x, y, data, color, labelRotate = 0, yUnits = 'f', ax = None):
         """
 
         """
         g = sns.boxplot(x = x
                         ,y = y
-                        ,hue = x
                         ,data = data
                         ,orient = 'v'
-                        # ,palette = color
+                        ,palette = color
                         ,ax = ax).set(
                                     xlabel = None
                                     ,ylabel = None
                                 )
+        
+        # Resize x-axis labels as needed
+        unique = np.unique(data[x])
+        if len(unique) > 10 and len(unique) <= 20:
+            ax.tick_params(axis = 'x', labelsize = 1.2 * self.chartProp)
+        elif len(unique) > 20:
+            ax.tick_params(axis = 'x', labelsize = 0.6 * self.chartProp)
+        
         plt.setp(ax.artists, alpha = 0.8)
         
+        plt.xticks(rotation = labelRotate)
+
         # Axis tick label formatting.
         qpUtil.qpUtilLabelFormatter(ax = ax, yUnits = yUnits)
-        plt.legend(bbox_to_anchor = (1.05, 1), loc = 2, borderaxespad = 0.)
 
+            
     def qpBoxPlotH(self, x, y, data, color = qpStyle.qpColorsHexMid, xUnits = 'f', ax = None):
         """
 
@@ -922,18 +931,18 @@ class MLEDA(QuickPlot):
 
                         # Univariate plot
                         ax = p.makeCanvas(title = 'Dist/KDE - Univariate\n* {}'.format(feature), yShift = 0.8, position = 141)
-                        p.qpDist(self.X_[feature].notnull()
+                        p.qpDist(self.X_[self.X_[feature].notnull()][feature].values
                                 ,color = qpStyle.qpColorsHexMid[2]
                                 ,yUnits = 'ffff'
                                 ,fit = stats.norm
                                 ,ax = ax)
                         
                         # Scatter plot
-
-                        ax = p.makeCanvas(title = '', xLabel = '', yLabel = '', yShift = 0.8, position = 142)
-                        p.qp2dScatter(x = self.X_[feature].notnull()
-                                    ,y = self.y_[self.X_[feature].notnull()]
-                                    # ,color = 
+                        ax = p.makeCanvas(title = '{}\nvs. {}'.format(self.target[0], feature), yShift = 0.8, position = 142)
+                        p.qp2dScatter(x = self.X_[self.X_[feature].notnull()][feature].values
+                                    ,y = self.y_[self.X_[feature].notnull()].values
+                                    ,size = 5
+                                    ,color = qpStyle.qpColorsHexMid[0]
                                     ,xUnits = 'f'
                                     ,yUnits = 'f'
                                     ,ax = ax
@@ -1056,7 +1065,7 @@ class MLEDA(QuickPlot):
                         uniSummDf = uniSummDf.sort_values(by = ['Proportion'], ascending = False)
                         
                         # Bivariate summary
-                        # biDf = pd.DataFrame(self.X_[feature]).join(self.y_)
+                        biDf = pd.DataFrame(self.X_[feature]).join(self.y_)
                         # biSummDf = pd.DataFrame(self.X_[feature]).join(self.y_)\
                         #                     .groupby([feature] + self.y_.columns.tolist()).size().reset_index()\
                         #                     .pivot(columns = self.y_.columns.tolist()[0], index = feature, values = 0)
@@ -1081,7 +1090,13 @@ class MLEDA(QuickPlot):
                                 ,ax = ax)                 
                                                 
                         # Bivariate box plot
-                        # ax = p.makeCanvas(title = 'Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 122)
+                        ax = p.makeCanvas(title = 'Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 122)
+                        p.qpBoxPlotV(x = feature
+                                    ,y = self.target[0]
+                                    ,data = biDf
+                                    ,color = qpStyle.genCmap(20,[qpStyle.qpColorsHexMid[0], qpStyle.qpColorsHexMid[1], qpStyle.qpColorsHexMid[2]])
+                                    ,labelRotate = 90 if len(unique) >= 4 else 0
+                                    ,ax = ax)
                         
                         plt.show()
                     
