@@ -657,7 +657,6 @@ class QuickPlot:
 
         # Axis tick label formatting.
         qpUtil.qpUtilLabelFormatter(ax = ax, yUnits = yUnits)
-
             
     def qpBoxPlotH(self, x, y, data, color = qpStyle.qpColorsHexMid, xUnits = 'f', ax = None):
         """
@@ -1051,8 +1050,6 @@ class MLEDA(QuickPlot):
                     ### vs. numerical target variable
                     if self.targetType == 'numerical':
                         
-                        print(feature)
-
                         # Univariate summary
                         uniSummDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion'])
                         unique, unique_counts = np.unique(self.X_[self.X_[feature].notnull()][feature], return_counts = True)
