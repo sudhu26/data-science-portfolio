@@ -803,6 +803,7 @@ class MLEDA(QuickPlot):
         else:
             self.X_, self.featureByDtype_ = self.qpMeasLevel()
 
+
     def qpMeasLevel(self):
         """
         Info:
@@ -831,8 +832,7 @@ class MLEDA(QuickPlot):
             # Change data type to object
             for col in self.overrideCat:
                 if self.X_[col].dtype != 'object':
-                    self.X_[col] = self.X_[col].apply(str)
-        
+                    self.X_[col] = self.X_[col].apply(str)        
         
         # Numeric
         if self.overrideNum is None:
@@ -889,11 +889,11 @@ class MLEDA(QuickPlot):
 
                         # Univariate summary
                         uniSummDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion'])
-                        unique, unique_counts = np.unique(self.X_[self.X_[feature].notnull()][feature], return_counts = True)
-                        for i, j in zip(unique, unique_counts):
+                        uniqueVals, uniqueCounts = np.unique(self.X_[self.X_[feature].notnull()][feature], return_counts = True)
+                        for i, j in zip(uniqueVals, uniqueCounts):
                             uniSummDf = uniSummDf.append({feature : i
                                                     ,'Count' : j
-                                                    ,'Proportion' : j / np.sum(unique_counts) * 100
+                                                    ,'Proportion' : j / np.sum(uniqueCounts) * 100
                                                     }
                                                 ,ignore_index = True)
                         
@@ -1050,13 +1050,15 @@ class MLEDA(QuickPlot):
                     ### vs. numerical target variable
                     if self.targetType == 'numerical':
                         
+                        print(feature)
+
                         # Univariate summary
                         uniSummDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion'])
-                        unique, unique_counts = np.unique(self.X_[self.X_[feature].notnull()][feature], return_counts = True)
-                        for i, j in zip(unique, unique_counts):
+                        uniqueVals, uniqueCounts = np.unique(self.X_[self.X_[feature].notnull()][feature], return_counts = True)
+                        for i, j in zip(uniqueVals, uniqueCounts):
                             uniSummDf = uniSummDf.append({feature : i
                                                     ,'Count' : j
-                                                    ,'Proportion' : j / np.sum(unique_counts) * 100
+                                                    ,'Proportion' : j / np.sum(uniqueCounts) * 100
                                                     }
                                                 ,ignore_index = True)
                         uniSummDf = uniSummDf.sort_values(by = ['Proportion'], ascending = False)
@@ -1079,9 +1081,24 @@ class MLEDA(QuickPlot):
                         
                         # Univariate plot
                         ax = p.makeCanvas(title = 'Univariate\n* {}'.format(feature), yShift = 0.8, position = 121)
-                        p.qpBarV(x = unique
-                                ,counts = unique_counts
-                                ,labelRotate = 90 if len(unique) >= 4 else 0
+                        
+                        # # Select error catching block for resorting labels
+                        # try:
+                        #     sorted(uniqueVals, key = int)
+                        # except ValueError:
+                        #     pass
+                        # else:
+                        #     # Sort uniqueVals/uniqueCounts for bar chart
+                        #     newIx = [sorted(list(uniqueVals), key = int).index(i) for i in list(uniqueVals)]
+                        #     uniqueVals = np.array(sorted(list(uniqueVals), key = int))
+                        #     uniqueCounts = np.array([y for x,y in sorted(zip(newIx, uniqueCounts))])
+                        
+                        #     # Sort temporary data frame for box plot
+                        #     biDf[feature] = biDf[feature].astype(int)
+
+                        p.qpBarV(x = uniqueVals
+                                ,counts = uniqueCounts
+                                ,labelRotate = 90 if len(uniqueVals) >= 4 else 0
                                 ,color = qpStyle.qpColorsHexMid[2]
                                 ,yUnits = 'f'
                                 ,ax = ax)                 
@@ -1090,9 +1107,9 @@ class MLEDA(QuickPlot):
                         ax = p.makeCanvas(title = 'Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 122)
                         p.qpBoxPlotV(x = feature
                                     ,y = self.target[0]
-                                    ,data = biDf
-                                    ,color = qpStyle.genCmap(20,[qpStyle.qpColorsHexMid[0], qpStyle.qpColorsHexMid[1], qpStyle.qpColorsHexMid[2]])
-                                    ,labelRotate = 90 if len(unique) >= 4 else 0
+                                    ,data = biDf[biDf[feature].notnull()].sort_values([feature])
+                                    ,color = qpStyle.genCmap(len(uniqueVals), [qpStyle.qpColorsHexMid[0], qpStyle.qpColorsHexMid[1], qpStyle.qpColorsHexMid[2]])
+                                    ,labelRotate = 90 if len(uniqueVals) >= 4 else 0
                                     ,ax = ax)
                         
                         plt.show()
@@ -1102,11 +1119,11 @@ class MLEDA(QuickPlot):
 
                         # Univariate summary
                         uniSummDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion'])
-                        unique, unique_counts = np.unique(self.X_[self.X_[feature].notnull()][feature], return_counts = True)
-                        for i, j in zip(unique, unique_counts):
+                        uniqueVals, uniqueCounts = np.unique(self.X_[self.X_[feature].notnull()][feature], return_counts = True)
+                        for i, j in zip(uniqueVals, uniqueCounts):
                             uniSummDf = uniSummDf.append({feature : i
                                                     ,'Count' : j
-                                                    ,'Proportion' : j / np.sum(unique_counts) * 100
+                                                    ,'Proportion' : j / np.sum(uniqueCounts) * 100
                                                     }
                                                 ,ignore_index = True)
                         uniSummDf = uniSummDf.sort_values(by = ['Proportion'], ascending = False)
@@ -1130,9 +1147,9 @@ class MLEDA(QuickPlot):
                         # Univariate plot
                         ax = p.makeCanvas(title = 'Univariate\n* {}'.format(feature), yShift = 0.8, position = 121)
                         
-                        p.qpBarV(x = unique
-                                ,counts = unique_counts
-                                ,labelRotate = 90 if len(unique) >= 4 else 0
+                        p.qpBarV(x = uniqueVals
+                                ,counts = uniqueCounts
+                                ,labelRotate = 90 if len(uniqueVals) >= 4 else 0
                                 ,color = qpStyle.qpColorsHexMid[2]
                                 ,yUnits = 'f'
                                 ,ax = ax)                        
@@ -1141,7 +1158,7 @@ class MLEDA(QuickPlot):
                         ax = p.makeCanvas(title = 'Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 122)
                         p.qpFacetCat(df = biSummDf
                                     ,feature = feature
-                                    ,labelRotate = 90 if len(unique) >= 4 else 0
+                                    ,labelRotate = 90 if len(uniqueVals) >= 4 else 0
                                     ,ax = ax)
 
                         plt.show()
