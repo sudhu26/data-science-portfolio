@@ -9,6 +9,7 @@ import sklearn.metrics as metrics
 import sklearn.preprocessing as prepocessing
 
 from statsmodels.stats.weightstats import ztest
+from statsmodels.stats.proportion import proportions_ztest
 from scipy import stats
 
 import quickplot.qpStyle as qpStyle
@@ -449,117 +450,6 @@ class QuickPlot:
         # Axis tick label formatting.
         qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits)
 
-    def qpPairPlot(self, df, vars = None, hue = None, diag_kind = 'auto'):
-        """
-        Info:
-            Description: 
-                Create pair plot that produces a grid of scatter plots for all unique pairs of
-                continuous features.
-            Parameters:
-                df : Pandas DataFrame
-                    Pandas DataFrame containing data of interest.
-                vars : list, default = None
-                    List of strings describing columns in Pandas DataFrame to be visualized.
-                hue : string, default = None
-                    Variable name to be used to introduce third dimension to scatter plots through
-                    a color hue.
-                diag_kind : string, default = 'auto.
-                    Type of plot created along diagonal.
-        """
-        # Custom plot formatting settings for this particular chart.
-        with plt.rc_context({'axes.titlesize' : 3.5 * self.chartProp
-                            ,'axes.labelsize' : 1.5 * self.chartProp  # Axis title font size
-                            ,'xtick.labelsize' : 1.2 * self.chartProp
-                            ,'xtick.major.size' : 0.5 * self.chartProp
-                            ,'xtick.major.width' : 0.05 * self.chartProp
-                            ,'ytick.labelsize' : 1.2 * self.chartProp
-                            ,'ytick.major.size' : 0.5 * self.chartProp
-                            ,'ytick.major.width' : 0.05 * self.chartProp
-                            ,'figure.facecolor' : qpStyle.qpWhite
-                            ,'axes.facecolor': qpStyle.qpWhite
-                            ,'axes.spines.left': True
-                            ,'axes.spines.bottom': True            
-                            ,'axes.edgecolor': qpStyle.qpGrey
-                            }):
-            
-            # Create pair plot.
-            g = sns.pairplot(data = df
-                            ,vars = vars
-                            ,hue = hue 
-                            ,diag_kind = diag_kind
-                            ,height = 0.2 * self.chartProp
-                            ,plot_kws = {'s' : 2.0 * self.chartProp
-                                         ,'edgecolor' : None
-                                         ,'linewidth' : 1
-                                         ,'alpha' : 1.0
-                                         ,'marker' : 'o'
-                                        }
-                            ,diag_kws = {'shade' : True}
-                            ,palette = qpStyle.qpColorsHexMid
-                            )
-            
-            # Add custom legend describing hue labels
-            if hue is not None:
-                
-                # Turn off standard legend
-                g.fig.legend()
-                g.fig.legends = []
-
-                # Add custom legend
-                handles = g._legend_data.values()
-                labels = g._legend_data.keys()
-                g.fig.legend(handles = handles
-                            ,labels = labels
-                            ,loc = 'upper center'
-                            ,markerscale = 0.15 * self.chartProp
-                            ,ncol = len(df[hue].unique())
-                            ,bbox_to_anchor = (0.5, 1.05, 0, 0)
-                            ,prop = {'size' : 1.5 * self.chartProp}
-                            )
-        
-    def qpCorrHeatmap(self, df, annot = True, cols = None, ax = None):
-        """
-        Info:
-            Description:
-                Using continuous features, create correlation heatmap. Capable of dropping 
-                zeros in select features, where zeros potentially indicate a complete absence
-                of the feature.
-            Parameters:
-                df : Pandas DataFrame
-                    Pandas DataFrame
-                annot : boolean, default = True
-                    Determines whether or not correlation table is annoted wil correlation
-                    value or not.
-                cols : list, default = None
-                    List of strings describing dataframe column. Limits dataframe to select
-                    columns.
-                ax : Axes object, default = None
-                    Axes object containing figure elements to be adjusted within function.
-        """
-        # Create correlation matrix
-        corrMatrix = df[cols].corr() if cols is not None else df.corr() 
-        
-        # Create heatmap using correlation matrix
-        g = sns.heatmap(corrMatrix
-                    ,vmin = -1.0
-                    ,vmax = 1.0
-                    ,annot = annot
-                    ,annot_kws = {'size' : 1.5 * self.chartProp}
-                    ,square = True
-                    ,ax = ax
-                    ,cmap = LinearSegmentedColormap.from_list(name = ''
-                                                            ,colors = [qpStyle.qpColorsRgb0Mid[1], 'white', qpStyle.qpColorsRgb0Mid[0]])
-                    )
-
-        # Format x and y-tick labels
-        g.set_yticklabels(g.get_yticklabels(), rotation = 0, fontsize = 1.25 * self.chartProp)
-        g.set_xticklabels(g.get_xticklabels(), rotation = 0, fontsize = 1.25 * self.chartProp)
-
-        # Customize color bar formatting
-        cbar = g.collections[0].colorbar
-        cbar.ax.tick_params(labelsize = 2.0 * self.chartProp, length = 0)
-        cbar.set_ticks([1, -1])
-
     def qpFacetNum(self, x, color, label, alpha = 0.8):
         """
         Info:
@@ -668,10 +558,10 @@ class QuickPlot:
         # Format scatter dots.
         plot.get_lines()[0].set_markerfacecolor(qpStyle.qpWhite)
         plot.get_lines()[0].set_color(qpStyle.qpColorsHexMid[2])
-        plot.get_lines()[0].set_markersize(2.0)
+        plot.get_lines()[0].set_markersize(5.0)
 
         # Format line representing normality.
-        plot.get_lines()[1].set_linewidth(2.0)
+        plot.get_lines()[1].set_linewidth(3.0)
         plot.get_lines()[1].set_color(qpStyle.qpGrey)
     
     # Standard visualization, seaborn
@@ -860,7 +750,7 @@ class QuickPlot:
                         ,data = data
                         ,x_jitter = x_jitter
                         ,color = color
-                        ,scatter_kws = {'alpha' : 0.5}
+                        ,scatter_kws = {'alpha' : 0.3}
                         ,ax = ax).set(
                                     xlabel = None
                                     ,ylabel = None
@@ -869,6 +759,195 @@ class QuickPlot:
         # Axis tick label formatting.
         qpUtil.qpUtilLabelFormatter(ax = ax, xUnits = xUnits, yUnits = yUnits)
     
+    def qpPairPlot(self, df, cols = None, hue = None, diag_kind = 'auto'):
+        """
+        Info:
+            Description: 
+                Create pair plot that produces a grid of scatter plots for all unique pairs of
+                continuous features.
+            Parameters:
+                df : Pandas DataFrame
+                    Pandas DataFrame containing data of interest.
+                vars : list, default = None
+                    List of strings describing columns in Pandas DataFrame to be visualized.
+                hue : string, default = None
+                    Variable name to be used to introduce third dimension to scatter plots through
+                    a color hue.
+                diag_kind : string, default = 'auto.
+                    Type of plot created along diagonal.
+        """
+        # Custom plot formatting settings for this particular chart.
+        with plt.rc_context({'axes.titlesize' : 3.5 * self.chartProp
+                            ,'axes.labelsize' : 1.5 * self.chartProp  # Axis title font size
+                            ,'xtick.labelsize' : 1.2 * self.chartProp
+                            ,'xtick.major.size' : 0.5 * self.chartProp
+                            ,'xtick.major.width' : 0.05 * self.chartProp
+                            ,'xtick.color' : qpStyle.qpGrey
+                            ,'ytick.labelsize' : 1.2 * self.chartProp
+                            ,'ytick.major.size' : 0.5 * self.chartProp
+                            ,'ytick.major.width' : 0.05 * self.chartProp
+                            ,'ytick.color' : qpStyle.qpGrey
+                            ,'figure.facecolor' : qpStyle.qpWhite
+                            ,'axes.facecolor': qpStyle.qpWhite
+                            ,'axes.spines.left': False
+                            ,'axes.spines.bottom': False
+                            ,'axes.edgecolor': qpStyle.qpGrey
+                            ,'axes.grid': False
+                            }):
+            
+            # Create pair plot.
+            g = sns.pairplot(data = df
+                            ,vars = cols
+                            ,hue = hue 
+                            ,diag_kind = diag_kind
+                            ,height = 0.2 * self.chartProp
+                            ,plot_kws = {'s' : 2.0 * self.chartProp
+                                         ,'edgecolor' : None
+                                         ,'linewidth' : 1
+                                         ,'alpha' : 0.7
+                                         ,'marker' : 'o'
+                                         ,'facecolor' : qpStyle.qpColorsHexMid[0] if hue is None else None
+                                        }
+                            ,diag_kws = {'facecolor' : qpStyle.qpColorsHexMid[1] if hue is None else None
+                                        }
+                            ,palette = qpStyle.qpColorsHexMid
+                            )
+            for ax in g.axes.flat:
+                _ = ax.set_ylabel(ax.get_ylabel(), rotation = 55)
+                _ = ax.set_xlabel(ax.get_xlabel(), rotation = 55)
+                _ = ax.xaxis.labelpad = 20
+                _ = ax.yaxis.labelpad = 75
+                _ = ax.xaxis.label.set_color(qpStyle.qpGrey)
+                _ = ax.yaxis.label.set_color(qpStyle.qpGrey)
+            
+            
+            plt.subplots_adjust(hspace = 0.0, wspace = 0.0)
+            
+            # Add custom legend describing hue labels
+            # if hue is not None:
+                
+            #     # Turn off standard legend
+            #     g.fig.legend()
+            #     g.fig.legends = []
+
+            #     # Add custom legend
+            #     handles = g._legend_data.values()
+            #     labels = g._legend_data.keys()
+            #     g.fig.legend(handles = handles
+            #                 ,labels = labels
+            #                 ,loc = 'upper center'
+            #                 ,markerscale = 0.15 * self.chartProp
+            #                 ,ncol = len(df[hue].unique())
+            #                 ,bbox_to_anchor = (0.5, 0.085 * self.chartProp)
+            #                 ,prop = {'size' : 2.5 * self.chartProp}
+            #                 )
+            
+    def qpCorrHeatmap(self, df, annot = True, cols = None, ax = None):
+        """
+        Info:
+            Description:
+                Using continuous features, create correlation heatmap. Produces correlation
+                with all numerical features, and can be limited to certain features using 'cols'.
+            Parameters:
+                df : Pandas DataFrame
+                    Pandas DataFrame
+                annot : boolean, default = True
+                    Determines whether or not correlation table is annoted wil correlation
+                    value or not.
+                cols : list, default = None
+                    List of strings describing dataframe column. Limits dataframe to select
+                    columns.
+                ax : Axes object, default = None
+                    Axes object containing figure elements to be adjusted within function.
+            Returns:
+                corrSummDf : Pandas DataFrame
+                    Pandas DataFrame summarizing highest correlation coefficients between 
+                    features and target.
+        """
+        # Create correlation matrix
+        corrMatrix = df[cols].corr() if cols is not None else df.corr() 
+        
+        # Create heatmap using correlation matrix
+        g = sns.heatmap(corrMatrix
+                    ,vmin = -1.0
+                    ,vmax = 1.0
+                    ,annot = annot
+                    ,annot_kws = {'size' : .65 * self.chartProp}
+                    ,square = False
+                    ,ax = ax
+                    ,xticklabels = True
+                    ,yticklabels = True
+                    ,cmap = LinearSegmentedColormap.from_list(name = ''
+                                                            ,colors = [qpStyle.qpColorsRgb0Dark[2], 'white', qpStyle.qpColorsRgb0Dark[0]])
+                    )
+
+        # Format x and y-tick labels
+        g.set_yticklabels(g.get_yticklabels(), rotation = 0, fontsize = .5 * self.chartProp)
+        g.set_xticklabels(g.get_xticklabels(), rotation = 90, fontsize = .5 * self.chartProp)
+
+        # Customize color bar formatting
+        cbar = g.collections[0].colorbar
+        cbar.ax.tick_params(labelsize = 1.2 * self.chartProp, colors = qpStyle.qpGrey, length = 0)
+        cbar.set_ticks([1.0, 0.0, -1.0])
+
+    def qpCorrHeatmapRefine(self, df, annot = True, cols = None, corrFocus = None, ax = None):
+        """
+        Info:
+            Description:
+                Using continuous features, create correlation heatmap. Capable of dropping 
+                zeros in select features, where zeros potentially indicate a complete absence
+                of the feature.
+            Parameters:
+                df : Pandas DataFrame
+                    Pandas DataFrame
+                annot : boolean, default = True
+                    Determines whether or not correlation table is annoted wil correlation
+                    value or not.
+                cols : list, default = None
+                    List of strings describing dataframe column. Limits dataframe to select
+                    columns.
+                corrFocus : string, default = self.target[0]
+                    The feature of focus in the supplemental correlation visualization. Used
+                    to determine the feature for which the nlargest correlation coefficients
+                    are returned.
+                ax : Axes object, default = None
+                    Axes object containing figure elements to be adjusted within function.
+            Returns:
+                corrSummDf : Pandas DataFrame
+                    Pandas DataFrame summarizing highest correlation coefficients between 
+                    features and target.
+        """
+        # Limit to top correlated features relative to corrFocus
+        corrMatrix = df[cols].corr() if cols is not None else df.corr() 
+        corrTop = corrMatrix[corrFocus]#[:-1]
+        corrTop = corrTop[abs(corrTop) > 0.5].sort_values(ascending = False)
+        display(pd.DataFrame(corrTop))        
+        
+        # Create heatmap using correlation matrix
+        g = sns.heatmap(df[corrTop.index].corr()
+                    ,vmin = -1.0
+                    ,vmax = 1.0
+                    ,annot = annot
+                    ,annot_kws = {'size' : .65 * self.chartProp}
+                    ,square = False
+                    ,ax = ax
+                    ,xticklabels = True
+                    ,yticklabels = True
+                    ,cmap = LinearSegmentedColormap.from_list(name = ''
+                                                            ,colors = [qpStyle.qpColorsRgb0Dark[2], 'white', qpStyle.qpColorsRgb0Dark[0]])
+                    )
+
+        # Format x and y-tick labels
+        g.set_yticklabels(g.get_yticklabels(), rotation = 0, fontsize = .75 * self.chartProp)
+        g.set_xticklabels(g.get_xticklabels(), rotation = 90, fontsize = .75 * self.chartProp)
+
+        # Customize color bar formatting
+        cbar = g.collections[0].colorbar
+        cbar.ax.tick_params(labelsize = 1.2 * self.chartProp, colors = qpStyle.qpGrey, length = 0)
+        cbar.set_ticks([1.0, 0.0, -1.0])
+
+        plt.show()          
+
     # Evaluation
     def qpConfusionMatrix(self, yTest, yPred, ax = None):
         """
@@ -1113,10 +1192,10 @@ class MLEDA(QuickPlot):
         else:
             self.featureByDtype_['categorical'] = self.overrideCat
 
-            # Change data type to object
-            for col in self.overrideCat:
-                if self.X_[col].dtype != 'object':
-                    self.X_[col] = self.X_[col].apply(str)        
+            # # Change data type to object
+            # for col in self.overrideCat:
+            #     if self.X_[col].dtype != 'object':
+            #         self.X_[col] = self.X_[col].apply(str)        
         
         # continuous
         if self.overrideNum is None:
@@ -1149,7 +1228,26 @@ class MLEDA(QuickPlot):
         else:
             return self.X_, self.featureByDtype_
 
-    def featureSummary(self):
+    def transformLabel(self, reverse = False):
+        """
+
+        """
+        if self.targetType == 'continuous':
+            self.y_ = self.y_.values.reshape(-1)
+        elif self.targetType == 'categorical':
+            self.le_ = prepocessing.LabelEncoder()
+
+            self.y_ = self.le_.fit_transform(self.y_.values.reshape(-1))
+            classes = self.le_.classes_
+
+            print('******************\nCategorical label encoding\n')
+            for origLbl, encLbl in zip(np.sort(self.le_.classes_), np.sort(np.unique(self.y_))):
+                print('{} --> {}'.format(origLbl, encLbl))
+
+        if reverse:
+            self.y_ = self.le_.inverse_transform(self.y_)
+    
+    def featureSummary(self, featureType = None):
         """
         Info:
             Description:
@@ -1157,128 +1255,43 @@ class MLEDA(QuickPlot):
                 and target feature type (categorical vs. continuous). Includes data visualizations as well
                 as summary tables with descriptive statistics and statistical tests, where applicable.
         """        
-        ### Iterate through each feature type and associated feature list
-        for k, v in self.featureByDtype_.items():
+        # Get feature list
+        features = self.featureByDtype_[featureType]
+                    
+        ### continuous feature summary
+        if featureType == 'continuous':
             
-            ### continuous feature summary
-            if k == 'continuous':
-                print('***********************************************************\n{} columns \n***********************************************************\n'.format(k))
+            # Iterate through each feature within a feature type
+            for feature in features:
                 
-                # Iterate through each feature within a feature type
-                for feature in v:                
+                # Instantiate charting object
+                p = QuickPlot(fig = plt.figure(), chartProp = 15, plotOrientation = 'wide')
+
+                ############################################################################################################
+                ### vs. continuous target variable
+                if self.targetType == 'continuous':
                     
-                    # Instantiate charting object
-                    p = QuickPlot(fig = plt.figure(), chartProp = 15, plotOrientation = 'wide')
+                    # Define bivariate dataframe
+                    biDf = pd.DataFrame(np.stack((self.X_[feature].values, self.y_)
+                                            ,axis = -1)
+                                        ,columns = [feature, self.target[0]])
+                    biDf[self.target[0]] = biDf[self.target[0]].astype(float)
 
-                    ############################################################################################################
-                    ### vs. continuous target variable
-                    if self.targetType == 'continuous':
-                      
-                        # Define bivariate dataframe
-                        biDf = pd.DataFrame(self.X_[feature]).join(self.y_)
-                        
-                        # Define summary tables
-                        describeDf = pd.DataFrame(biDf[feature].describe()).reset_index()
-                        
-                        # If continuous variable has fewer than a set number of unique variables, represent variable
-                        # as a categorical variable vs. a continuous target variable
-                        if len(np.unique(biDf[feature].values)) <= 20:
-                            
-                            describeDf = describeDf.rename(columns = {'index' : ''})                        
-                            
-                            # Bivariate summary statistics
-                            biSummStatsDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion', 'Mean', 'StdDv'])                            
-                            for featureVal in np.unique(biDf[feature].values):
-                                featureSlice = biDf[(biDf[feature] == featureVal) & (biDf[feature].notnull())][feature]
-                            
-                                biSummStatsDf = biSummStatsDf.append({feature : featureVal
-                                                                        ,'Count' : len(featureSlice)
-                                                                        ,'Proportion' : len(featureSlice) / len(biDf[feature]) * 100
-                                                                        ,'Mean' : np.mean(featureSlice)
-                                                                        ,'StdDv' : np.std(featureSlice)
-                                                                        }
-                                                                    ,ignore_index = True)
-                            
-                            # Display summary dataframes
-                            self.dfSideBySide(dfs = (describeDf, biSummStatsDf), names = ['Univariate stats', 'Bivariate stats'])
-
-                            # Univariate plot
-                            uniqueVals, uniqueCounts = np.unique(self.X_[self.X_[feature].notnull()][feature], return_counts = True)
-                            ax = p.makeCanvas(title = 'Univariate\n* {}'.format(feature), yShift = 0.8, position = 131)
-                            p.qpBarV(x = uniqueVals
-                                ,counts = uniqueCounts
-                                ,labelRotate = 90 if len(uniqueVals) >= 4 else 0
-                                ,color = qpStyle.qpColorsHexMid[2]
-                                ,yUnits = 'f'
-                                ,ax = ax)                        
-
-                            # Regression plot
-                            ax = p.makeCanvas(title = 'Regression plot\n* {}'.format(feature), yShift = 0.8, position = 132)
-                            p.qpRegPlot(x = feature
-                                        ,y = self.target[0]
-                                        ,data = biDf[biDf[feature].notnull()]
-                                        ,x_jitter = .1
-                                        ,ax = ax)
-
-                            # Bivariate box plot
-                            ax = p.makeCanvas(title = 'Box plot - Faceted by\n* {}'.format(feature), yShift = 0.8, position = 133)
-                            p.qpBoxPlotV(x = feature
-                                        ,y = self.target[0]
-                                        ,data = biDf[biDf[feature].notnull()]
-                                        ,color = qpStyle.genCmap(len(uniqueVals), [qpStyle.qpColorsHexMid[0], qpStyle.qpColorsHexMid[1], qpStyle.qpColorsHexMid[2]])
-                                        ,labelRotate = 90 if len(uniqueVals) >= 4 else 0
-                                        ,ax = ax)
-
-                        # If continuous variable has greater than a set number of unique variables, represent variable
-                        # as a continuous variable vs. a continuous target variable
-                        else:
-                            
-                            # Add skew and curtosis to describeDf
-                            describeDf = describeDf.append({'index' : 'skew', feature : stats.skew(biDf[feature].values, nan_policy = 'omit')
-                                                       }, ignore_index = True)
-                            describeDf = describeDf.append({'index' : 'kurtosis', feature : stats.kurtosis(biDf[feature].values, nan_policy = 'omit')
-                                                       }, ignore_index = True)
-                            describeDf = describeDf.rename(columns = {'index' : ''})
-                            
-                            # Display summary dataframes
-                            display(describeDf)
-
-                            # Univariate plot
-                            ax = p.makeCanvas(title = 'Dist/KDE - Univariate\n* {}'.format(feature), yShift = 0.8, position = 131)
-                            p.qpDist(biDf[(biDf[feature].notnull())][feature].values                                
-                                    ,color = qpStyle.qpColorsHexMid[2]
-                                    ,yUnits = 'ffff'
-                                    ,fit = stats.norm
-                                    ,ax = ax)
-                        
-                            # Probability plot
-                            ax = p.makeCanvas(title = 'Probability plot\n* {}'.format(feature), yShift = 0.8, position = 132)
-                            p.qpProbPlot(x = biDf[(biDf[feature].notnull())][feature].values
-                                        ,plot = ax)
-                        
-                            # Regression plot
-                            ax = p.makeCanvas(title = 'Regression plot\n* {}'.format(feature), yShift = 0.8, position = 133)
-                            p.qpRegPlot(x = feature
-                                        ,y = self.target[0]
-                                        ,data = biDf[biDf[feature].notnull()]
-                                        ,x_jitter = .1
-                                        ,ax = ax)                            
-                        plt.show()                        
+                    # Define summary tables
+                    describeDf = pd.DataFrame(biDf[feature].describe()).reset_index()
                     
-                    ############################################################################################################
-                    ### vs. categorical target variable
-                    elif self.targetType == 'categorical':
+                    # If continuous variable has fewer than a set number of unique variables, represent variable
+                    # as a categorical variable vs. a continuous target variable
+                    if len(np.unique(biDf[feature].values)) <= 20:
                         
-                        # Bivariate roll-up table
-                        biDf = pd.DataFrame(self.X_[feature]).join(self.y_)
+                        describeDf = describeDf.rename(columns = {'index' : ''})                        
                         
                         # Bivariate summary statistics
-                        biSummStatsDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion', 'Mean', 'StdDv'])
+                        biSummStatsDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion', 'Mean', 'StdDv'])                            
+                        for featureVal in np.unique(biDf[feature].values):
+                            featureSlice = biDf[(biDf[feature] == featureVal) & (biDf[feature].notnull())][feature]
                         
-                        for labl in np.unique(self.y_):
-                            featureSlice = biDf[biDf[self.target[0]] == labl][feature]
-                        
-                            biSummStatsDf = biSummStatsDf.append({feature : labl
+                            biSummStatsDf = biSummStatsDf.append({feature : featureVal
                                                                     ,'Count' : len(featureSlice)
                                                                     ,'Proportion' : len(featureSlice) / len(biDf[feature]) * 100
                                                                     ,'Mean' : np.mean(featureSlice)
@@ -1286,201 +1299,317 @@ class MLEDA(QuickPlot):
                                                                     }
                                                                 ,ignore_index = True)
                         
-                        # Display summary tables
-                        describeDf = pd.DataFrame(biDf[feature].describe()).reset_index()
-                        describeDf = describeDf.append({'index' : 'skew'
-                                                        ,feature : stats.skew(biDf[feature].values, nan_policy = 'omit')
-                                                       }
-                                                ,ignore_index = True)
-                        describeDf = describeDf.append({'index' : 'kurtosis'
-                                                        ,feature : stats.kurtosis(biDf[feature].values, nan_policy = 'omit')
-                                                       }
-                                                ,ignore_index = True)
-                        describeDf = describeDf.rename(columns = {'index' : ''})
+                        # Display summary dataframes
+                        self.dfSideBySide(dfs = (describeDf, biSummStatsDf), names = ['Univariate stats', 'Bivariate stats'])
 
-                        # Execute z-test or t-test
-                        if len(np.unique(self.y_)) == 2:
-                            s1 = biDf[biDf[self.target[0]] == biDf[self.target[0]].unique()[0]][feature]
-                            s2 = biDf[biDf[self.target[0]] == biDf[self.target[0]].unique()[1]][feature]
-                            if len(s1) > 30 and len(s2) > 30:
-                                z, pVal = ztest(s1, s2)
-                                
-                                statTestDf = pd.DataFrame(data = [{'z-test statistic' : z, 'p-value' : pVal}]
-                                                            ,columns = ['z-test statistic', 'p-value']
-                                                            ,index = [feature]).round(4)
-                            else:
-                                t, pVal = stats.ttest_ind(s1, s2)
-                                
-                                statTestDf = pd.DataFrame(data = [{'t-test statistic' : t, 'p-value' : pVal}]
-                                                            ,columns = ['t-test statistic', 'p-value']
-                                                            ,index = [feature]).round(4)
-                            self.dfSideBySide(dfs = (describeDf, biSummStatsDf, statTestDf)
-                                                ,names = ['Univariate stats', 'Bivariate stats', 'Statistical test'])
-                        else:
-                            self.dfSideBySide(dfs = (describeDf, biSummStatsDf)
-                                                ,names = ['Descriptive stats', 'Bivariate stats'])
-                            
                         # Univariate plot
-                        ax = p.makeCanvas(title = 'Dist/KDE - Univariate\n* {}'.format(feature), yShift = 0.8, position = 151)
-                        p.qpDist(biDf[(biDf[feature].notnull())][feature].values
-                                ,color = qpStyle.qpColorsHexMid[2]
-                                ,yUnits = 'ffff'
-                                ,ax = ax)
-                        
-                        # Probability plot
-                        ax = p.makeCanvas(title = 'Probability plot\n* {}'.format(feature), yShift = 0.8, position = 152)
-                        p.qpProbPlot(x = biDf[(biDf[feature].notnull())][feature].values
-                                    ,plot = ax)
-                        
-                        # Bivariate kernel density plot
-                        ax = p.makeCanvas(title = 'KDE - Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 153)
-                        for ix, labl in enumerate(np.unique(biDf[(biDf[feature].notnull())][self.target[0]].values)):
-                            p.qpKde(biDf[(biDf[feature].notnull()) & (biDf[self.target[0]] == labl)][feature].values
-                                    ,color = qpStyle.qpColorsHexMid[ix]
-                                    ,yUnits = 'ffff'
-                                    ,ax = ax)
-
-                        # Bivariate histogram
-                        ax = p.makeCanvas(title = 'Hist - Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 154)
-                        for ix, labl in enumerate(np.unique(biDf[(biDf[feature].notnull())][self.target[0]].values)):
-                            p.qpFacetNum(biDf[(biDf[feature].notnull()) & (biDf[self.target[0]] == labl)][feature].values
-                                        ,color = qpStyle.qpColorsHexMid[ix]
-                                        ,label = labl
-                                        ,alpha = 0.4)
-
-                        # Boxplot histogram
-                        ax = p.makeCanvas(title = 'Boxplot - Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 155)
-                        p.qpBoxPlotH(x = feature
-                                    ,y = self.target[0]
-                                    ,data = biDf
-                                    ,ax = ax)
-                        plt.show()
-
-            ############################################################################################################
-            ### Categorical feature summary
-            elif k == 'categorical':
-                print('***********************************************************\n{} columns \n***********************************************************\n'.format(k))
-            
-                # Iterate through each feature within a feature type
-                for feature in v:                
-                    
-                    # Instantiate charting object
-                    p = QuickPlot(fig = plt.figure(), chartProp = 15, plotOrientation = 'wide')
-
-                    ############################################################################################################
-                    ### vs. continuous target variable
-                    if self.targetType == 'continuous':
-                        
-                        # Univariate summary
-                        uniSummDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion'])
                         uniqueVals, uniqueCounts = np.unique(self.X_[self.X_[feature].notnull()][feature], return_counts = True)
-                        for i, j in zip(uniqueVals, uniqueCounts):
-                            uniSummDf = uniSummDf.append({feature : i
-                                                    ,'Count' : j
-                                                    ,'Proportion' : j / np.sum(uniqueCounts) * 100
-                                                    }
-                                                ,ignore_index = True)
-                        uniSummDf = uniSummDf.sort_values(by = ['Proportion'], ascending = False)
-                        
-                        # Bivariate summary
-                        biDf = pd.DataFrame(self.X_[feature]).join(self.y_)
-                        statsDict = {'N' : len, 'Median' : np.nanmedian, 'Mean' : np.nanmean, 'StdDev' : np.nanstd}
-                        biSummPivDf = pd.pivot_table(biDf
-                                                    ,index = feature
-                                                    ,aggfunc = {self.target[0] : statsDict})
-                        multiIndex = biSummPivDf.columns
-                        singleIndex = pd.Index([i[1] for i in multiIndex.tolist()])
-                        biSummPivDf.columns = singleIndex
-                        biSummPivDf.reset_index(inplace = True)
-
-                        # Instantiate charting object
-                        p = QuickPlot(fig = plt.figure(), chartProp = 15, plotOrientation = 'wide')
-                        
-                        # Display summary tables
-                        self.dfSideBySide(dfs = (uniSummDf, biSummPivDf), names = ['Univariate summary', 'Bivariate summary'])
-                        
-                        # Univariate plot
-                        ax = p.makeCanvas(title = 'Univariate\n* {}'.format(feature), yShift = 0.8, position = 121)
-                        
-                        # Select error catching block for resorting labels
-                        try:
-                            sorted(uniqueVals, key = int)
-                        except ValueError:
-                            pass
-                        else:
-                            # Sort uniqueVals/uniqueCounts for bar chart
-                            newIx = [sorted(list(uniqueVals), key = int).index(i) for i in list(uniqueVals)]
-                            uniqueVals = np.array(sorted(list(uniqueVals), key = int))
-                            uniqueCounts = np.array([y for x,y in sorted(zip(newIx, uniqueCounts))])
-                        
-                            # Sort temporary data frame for box plot
-                            biDf[feature] = biDf[feature].astype(int)
-
+                        ax = p.makeCanvas(title = 'Univariate\n* {}'.format(feature), yShift = 0.8, position = 131)
                         p.qpBarV(x = uniqueVals
-                                ,counts = uniqueCounts
-                                ,labelRotate = 90 if len(uniqueVals) >= 4 else 0
-                                ,color = qpStyle.qpColorsHexMid[2]
-                                ,yUnits = 'f'
-                                ,ax = ax)                 
-                                                
+                            ,counts = uniqueCounts
+                            ,labelRotate = 90 if len(uniqueVals) >= 4 else 0
+                            ,color = qpStyle.qpColorsHexMid[2]
+                            ,yUnits = 'f'
+                            ,ax = ax)                        
+
+                        # Regression plot
+                        ax = p.makeCanvas(title = 'Regression plot\n* {}'.format(feature), yShift = 0.8, position = 132)
+                        p.qpRegPlot(x = feature
+                                    ,y = self.target[0]
+                                    ,data = biDf[biDf[feature].notnull()]
+                                    ,x_jitter = .2
+                                    ,ax = ax)
+
                         # Bivariate box plot
-                        ax = p.makeCanvas(title = 'Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 122)
+                        ax = p.makeCanvas(title = 'Box plot - Faceted by\n* {}'.format(feature), yShift = 0.8, position = 133)
                         p.qpBoxPlotV(x = feature
                                     ,y = self.target[0]
-                                    ,data = biDf[biDf[feature].notnull()].sort_values([feature])
+                                    ,data = biDf[biDf[feature].notnull()]
                                     ,color = qpStyle.genCmap(len(uniqueVals), [qpStyle.qpColorsHexMid[0], qpStyle.qpColorsHexMid[1], qpStyle.qpColorsHexMid[2]])
                                     ,labelRotate = 90 if len(uniqueVals) >= 4 else 0
-                                    ,ax = ax)                        
-                        plt.show()
-                    
-                    ############################################################################################################
-                    ### vs. categorical target variable
-                    elif self.targetType == 'categorical':
+                                    ,ax = ax)
 
-                        # Univariate summary
-                        uniSummDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion'])
-                        uniqueVals, uniqueCounts = np.unique(self.X_[self.X_[feature].notnull()][feature], return_counts = True)
-                        for i, j in zip(uniqueVals, uniqueCounts):
-                            uniSummDf = uniSummDf.append({feature : i
-                                                    ,'Count' : j
-                                                    ,'Proportion' : j / np.sum(uniqueCounts) * 100
-                                                    }
-                                                ,ignore_index = True)
-                        uniSummDf = uniSummDf.sort_values(by = ['Proportion'], ascending = False)
+                    # If continuous variable has greater than a set number of unique variables, represent variable
+                    # as a continuous variable vs. a continuous target variable
+                    else:
                         
-                        # Bivariate summary
-                        biDf = pd.DataFrame(self.X_[feature]).join(self.y_)
-                        biSummDf = pd.DataFrame(self.X_[feature]).join(self.y_)\
-                                            .groupby([feature] + self.y_.columns.tolist()).size().reset_index()\
-                                            .pivot(columns = self.y_.columns.tolist()[0], index = feature, values = 0)
-                        multiIndex = biSummDf.columns
-                        singleIndex = pd.Index([i for i in multiIndex.tolist()])
-                        biSummDf.columns = singleIndex
-                        biSummDf.reset_index(inplace = True)
+                        # Add skew and curtosis to describeDf
+                        describeDf = describeDf.append({'index' : 'skew', feature : stats.skew(biDf[feature].values, nan_policy = 'omit')
+                                                    }, ignore_index = True)
+                        describeDf = describeDf.append({'index' : 'kurtosis', feature : stats.kurtosis(biDf[feature].values, nan_policy = 'omit')
+                                                    }, ignore_index = True)
+                        describeDf = describeDf.rename(columns = {'index' : ''})
+                        
+                        # Display summary dataframes
+                        display(describeDf)
 
-                        # Instantiate charting object
-                        p = QuickPlot(fig = plt.figure(), chartProp = 15, plotOrientation = 'wide')
+                        # Univariate plot
+                        ax = p.makeCanvas(title = 'Dist/KDE - Univariate\n* {}'.format(feature), yShift = 0.8, position = 131)
+                        p.qpDist(biDf[(biDf[feature].notnull())][feature].values                                
+                                ,color = qpStyle.qpColorsHexMid[2]
+                                ,yUnits = 'ffff'
+                                ,fit = stats.norm
+                                ,ax = ax)
+                    
+                        # Probability plot
+                        ax = p.makeCanvas(title = 'Probability plot\n* {}'.format(feature), yShift = 0.8, position = 132)
+                        p.qpProbPlot(x = biDf[(biDf[feature].notnull())][feature].values
+                                    ,plot = ax)
+                    
+                        # Regression plot
+                        ax = p.makeCanvas(title = 'Regression plot\n* {}'.format(feature), yShift = 0.8, position = 133)
+                        p.qpRegPlot(x = feature
+                                    ,y = self.target[0]
+                                    ,data = biDf[biDf[feature].notnull()]
+                                    ,x_jitter = .1
+                                    ,ax = ax)                            
+                    plt.show()                        
+                
+                ############################################################################################################
+                ### vs. categorical target variable
+                elif self.targetType == 'categorical':
+                    
+                    # Bivariate roll-up table
+                    biDf = pd.DataFrame(np.stack((self.X_[feature].values, self.y_)
+                                            ,axis = -1)
+                                        ,columns = [feature, self.target[0]])
+                    
+                    # Bivariate summary statistics
+                    biSummStatsDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion', 'Mean', 'StdDv'])
+                    
+                    for labl in np.unique(self.y_):
+                        featureSlice = biDf[biDf[self.target[0]] == labl][feature]
+                    
+                        biSummStatsDf = biSummStatsDf.append({feature : labl
+                                                                ,'Count' : len(featureSlice)
+                                                                ,'Proportion' : len(featureSlice) / len(biDf[feature]) * 100
+                                                                ,'Mean' : np.mean(featureSlice)
+                                                                ,'StdDv' : np.std(featureSlice)
+                                                                }
+                                                            ,ignore_index = True)
+                    
+                    # Display summary tables
+                    describeDf = pd.DataFrame(biDf[feature].describe()).reset_index()
+                    describeDf = describeDf.append({'index' : 'skew'
+                                                    ,feature : stats.skew(biDf[feature].values, nan_policy = 'omit')
+                                                    }
+                                            ,ignore_index = True)
+                    describeDf = describeDf.append({'index' : 'kurtosis'
+                                                    ,feature : stats.kurtosis(biDf[feature].values, nan_policy = 'omit')
+                                                    }
+                                            ,ignore_index = True)
+                    describeDf = describeDf.rename(columns = {'index' : ''})
+
+                    # Execute z-test or t-test
+                    if len(np.unique(self.y_)) == 2:
+                        s1 = biDf[biDf[self.target[0]] == biDf[self.target[0]].unique()[0]][feature]
+                        s2 = biDf[biDf[self.target[0]] == biDf[self.target[0]].unique()[1]][feature]
+                        if len(s1) > 30 and len(s2) > 30:
+                            z, pVal = ztest(s1, s2)
+                            
+                            statTestDf = pd.DataFrame(data = [{'z-test statistic' : z, 'p-value' : pVal}]
+                                                        ,columns = ['z-test statistic', 'p-value']
+                                                        ,index = [feature]).round(4)
+                        else:
+                            t, pVal = stats.ttest_ind(s1, s2)
+                            
+                            statTestDf = pd.DataFrame(data = [{'t-test statistic' : t, 'p-value' : pVal}]
+                                                        ,columns = ['t-test statistic', 'p-value']
+                                                        ,index = [feature]).round(4)
+                        self.dfSideBySide(dfs = (describeDf, biSummStatsDf, statTestDf)
+                                            ,names = ['Univariate stats', 'Bivariate stats', 'Statistical test'])
+                    else:
+                        self.dfSideBySide(dfs = (describeDf, biSummStatsDf)
+                                            ,names = ['Descriptive stats', 'Bivariate stats'])
+                        
+                    # Univariate plot
+                    ax = p.makeCanvas(title = 'Dist/KDE - Univariate\n* {}'.format(feature), yShift = 0.8, position = 151)
+                    p.qpDist(biDf[(biDf[feature].notnull())][feature].values
+                            ,color = qpStyle.qpColorsHexMid[2]
+                            ,yUnits = 'ffff'
+                            ,ax = ax)
+                    
+                    # Probability plot
+                    ax = p.makeCanvas(title = 'Probability plot\n* {}'.format(feature), yShift = 0.8, position = 152)
+                    p.qpProbPlot(x = biDf[(biDf[feature].notnull())][feature].values
+                                ,plot = ax)
+                    
+                    # Bivariate kernel density plot
+                    ax = p.makeCanvas(title = 'KDE - Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 153)
+                    for ix, labl in enumerate(np.unique(biDf[(biDf[feature].notnull())][self.target[0]].values)):
+                        p.qpKde(biDf[(biDf[feature].notnull()) & (biDf[self.target[0]] == labl)][feature].values
+                                ,color = qpStyle.qpColorsHexMid[ix]
+                                ,yUnits = 'ffff'
+                                ,ax = ax)
+
+                    # Bivariate histogram
+                    ax = p.makeCanvas(title = 'Hist - Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 154)
+                    for ix, labl in enumerate(np.unique(biDf[(biDf[feature].notnull())][self.target[0]].values)):
+                        p.qpFacetNum(biDf[(biDf[feature].notnull()) & (biDf[self.target[0]] == labl)][feature].values
+                                    ,color = qpStyle.qpColorsHexMid[ix]
+                                    ,label = labl
+                                    ,alpha = 0.4)
+
+                    # Boxplot histogram
+                    ax = p.makeCanvas(title = 'Boxplot - Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 155)
+                    p.qpBoxPlotH(x = feature
+                                ,y = self.target[0]
+                                ,data = biDf
+                                ,ax = ax)
+                    plt.show()
+
+        ############################################################################################################
+        ### Categorical feature summary
+        elif featureType == 'categorical':
+            
+            # Iterate through each feature within a feature type
+            for feature in features:
+                
+                # Instantiate charting object
+                p = QuickPlot(fig = plt.figure(), chartProp = 15, plotOrientation = 'wide')
+
+                ############################################################################################################
+                ### vs. continuous target variable
+                if self.targetType == 'continuous':
+                    
+                    # Univariate summary
+                    uniSummDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion'])
+                    uniqueVals, uniqueCounts = np.unique(self.X_[self.X_[feature].notnull()][feature], return_counts = True)
+                    for i, j in zip(uniqueVals, uniqueCounts):
+                        uniSummDf = uniSummDf.append({feature : i
+                                                ,'Count' : j
+                                                ,'Proportion' : j / np.sum(uniqueCounts) * 100
+                                                }
+                                            ,ignore_index = True)
+                    uniSummDf = uniSummDf.sort_values(by = ['Proportion'], ascending = False)
+                    
+                    # Bivariate summary
+                    biDf = pd.DataFrame(np.stack((self.X_[feature].values, self.y_)
+                                            ,axis = -1)
+                                        ,columns = [feature, self.target[0]])
+                    biDf[self.target[0]] = biDf[self.target[0]].astype(float)
+                    statsDict = {'N' : len, 'Median' : np.nanmedian, 'Mean' : np.nanmean, 'StdDev' : np.nanstd}
+                    biSummPivDf = pd.pivot_table(biDf
+                                                ,index = feature
+                                                ,aggfunc = {self.target[0] : statsDict})
+                    multiIndex = biSummPivDf.columns
+                    singleIndex = pd.Index([i[1] for i in multiIndex.tolist()])
+                    biSummPivDf.columns = singleIndex
+                    biSummPivDf.reset_index(inplace = True)
+
+                    # Instantiate charting object
+                    p = QuickPlot(fig = plt.figure(), chartProp = 15, plotOrientation = 'wide')
+                    
+                    # Display summary tables
+                    self.dfSideBySide(dfs = (uniSummDf, biSummPivDf), names = ['Univariate summary', 'Bivariate summary'])
+                    
+                    # Univariate plot
+                    ax = p.makeCanvas(title = 'Univariate\n* {}'.format(feature), yShift = 0.8, position = 121)
+                    
+                    # Select error catching block for resorting labels
+                    try:
+                        sorted(uniqueVals, key = int)
+                    except ValueError:
+                        pass
+                    else:
+                        # Sort uniqueVals/uniqueCounts for bar chart
+                        newIx = [sorted(list(uniqueVals), key = int).index(i) for i in list(uniqueVals)]
+                        uniqueVals = np.array(sorted(list(uniqueVals), key = int))
+                        uniqueCounts = np.array([y for x,y in sorted(zip(newIx, uniqueCounts))])
+                    
+                        # Sort temporary data frame for box plot
+                        biDf[feature] = biDf[feature].astype(int)
+
+                    p.qpBarV(x = uniqueVals
+                            ,counts = uniqueCounts
+                            ,labelRotate = 90 if len(uniqueVals) >= 4 else 0
+                            ,color = qpStyle.qpColorsHexMid[2]
+                            ,yUnits = 'f'
+                            ,ax = ax)                 
+                                            
+                    # Bivariate box plot
+                    ax = p.makeCanvas(title = 'Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 122)
+                    p.qpBoxPlotV(x = feature
+                                ,y = self.target[0]
+                                ,data = biDf[biDf[feature].notnull()].sort_values([feature])
+                                ,color = qpStyle.genCmap(len(uniqueVals), [qpStyle.qpColorsHexMid[0], qpStyle.qpColorsHexMid[1], qpStyle.qpColorsHexMid[2]])
+                                ,labelRotate = 90 if len(uniqueVals) >= 4 else 0
+                                ,ax = ax)                        
+                    plt.show()
+                
+                ############################################################################################################
+                ### vs. categorical target variable
+                elif self.targetType == 'categorical':
+
+                    # Univariate summary
+                    uniSummDf = pd.DataFrame(columns = [feature, 'Count', 'Proportion'])
+                    uniqueVals, uniqueCounts = np.unique(self.X_[self.X_[feature].notnull()][feature], return_counts = True)
+                    for i, j in zip(uniqueVals, uniqueCounts):
+                        uniSummDf = uniSummDf.append({feature : i
+                                                ,'Count' : j
+                                                ,'Proportion' : j / np.sum(uniqueCounts) * 100
+                                                }
+                                            ,ignore_index = True)
+                    uniSummDf = uniSummDf.sort_values(by = ['Proportion'], ascending = False)
+                    
+                    # Bivariate summary
+                    biDf = pd.DataFrame(np.stack((self.X_[feature].values, self.y_)
+                                            ,axis = -1)
+                                        ,columns = [feature, self.target[0]])
+                    biSummDf = biDf.groupby([feature] + self.target).size().reset_index()\
+                                        .pivot(columns = self.target[0], index = feature, values = 0)
+                    
+                    multiIndex = biSummDf.columns
+                    singleIndex = pd.Index([i for i in multiIndex.tolist()])
+                    biSummDf.columns = singleIndex
+                    biSummDf.reset_index(inplace = True)
+
+                    # Execute z-test
+                    if len(np.unique(biDf[feature])) == 2:
+                        
+                        # Total observations
+                        totalObs1 = biDf[(biDf[feature] == np.unique(biDf[feature])[0])][feature].shape[0]
+                        totalObs2 = biDf[(biDf[feature] == np.unique(biDf[feature])[1])][feature].shape[0]
+                        
+                        # Total positive observations
+                        posObs1 = biDf[(biDf[feature] == np.unique(biDf[feature])[0]) & (biDf[self.target[0]] == 1)][feature].shape[0]
+                        posObs2 = biDf[(biDf[feature] == np.unique(biDf[feature])[1]) & (biDf[self.target[0]] == 1)][feature].shape[0]
+                        
+                        z, pVal = proportions_ztest(count = (posObs1, posObs2), nobs = (totalObs1, totalObs2))
+                        
+                        statTestDf = pd.DataFrame(data = [{'z-test statistic' : z, 'p-value' : pVal}]
+                                                    ,columns = ['z-test statistic', 'p-value']
+                                                    ,index = [feature]).round(4)
+                        
+                        # Display summary tables
+                        self.dfSideBySide(dfs = (uniSummDf, biSummDf, statTestDf), names = ['Univariate summary', 'Biivariate summary', 'Statistical test'])
+                    else:
                         
                         # Display summary tables
                         self.dfSideBySide(dfs = (uniSummDf, biSummDf), names = ['Univariate summary', 'Biivariate summary'])
-                        
-                        # Univariate plot
-                        ax = p.makeCanvas(title = 'Univariate\n* {}'.format(feature), yShift = 0.8, position = 121)
-                        
-                        p.qpBarV(x = uniqueVals
-                                ,counts = uniqueCounts
+                    
+
+                    # Instantiate charting object
+                    p = QuickPlot(fig = plt.figure(), chartProp = 15, plotOrientation = 'wide')
+                    
+                    
+                    # Univariate plot
+                    ax = p.makeCanvas(title = 'Univariate\n* {}'.format(feature), yShift = 0.8, position = 121)
+                    
+                    p.qpBarV(x = uniqueVals
+                            ,counts = uniqueCounts
+                            ,labelRotate = 90 if len(uniqueVals) >= 4 else 0
+                            ,color = qpStyle.qpColorsHexMid[2]
+                            ,yUnits = 'f'
+                            ,ax = ax)                        
+                    
+                    # Bivariate plot
+                    ax = p.makeCanvas(title = 'Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 122)
+                    p.qpFacetCat(df = biSummDf
+                                ,feature = feature
                                 ,labelRotate = 90 if len(uniqueVals) >= 4 else 0
-                                ,color = qpStyle.qpColorsHexMid[2]
-                                ,yUnits = 'f'
-                                ,ax = ax)                        
-                        
-                        # Bivariate plot
-                        ax = p.makeCanvas(title = 'Faceted by target\n* {}'.format(feature), yShift = 0.8, position = 122)
-                        p.qpFacetCat(df = biSummDf
-                                    ,feature = feature
-                                    ,labelRotate = 90 if len(uniqueVals) >= 4 else 0
-                                    ,ax = ax)
-                        plt.show()
+                                ,ax = ax)
+                    plt.show()
 
     def dateTransformer(self):
         """
