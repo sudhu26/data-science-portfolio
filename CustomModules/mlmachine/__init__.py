@@ -3,9 +3,9 @@ import os
 import sys
 modulePath = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(modulePath) if modulePath not in sys.path else None
-# sys.path.append(os.path.join(dir_path,'visualize'))
-print(sys.path)
 
+import seaborn as sns
+sns.set_style('whitegrid')
 
 class Machine():
     """
@@ -51,13 +51,13 @@ class Machine():
         self.target = target
         self.targetType = targetType
 
-        # Execute method qpMeasLevel
+        # Execute method measLevel
         if self.target is not None:
-            self.X_, self.y_, self.featureByDtype_ = self.qpMeasLevel()
+            self.X_, self.y_, self.featureByDtype_ = self.measLevel()
         else:
-            self.X_, self.featureByDtype_ = self.qpMeasLevel()
+            self.X_, self.featureByDtype_ = self.measLevel()
     
-    def qpMeasLevel(self):
+    def measLevel(self):
         """
         Info:
             Description:
@@ -111,6 +111,7 @@ class Machine():
         else:
             return self.X_, self.featureByDtype_
 
+    # Import mlmachine modules
     from .clean.featureCleaner import transformLabel
     from .visualize import plotter
     from .explore.eda import edaNumTargetNumFeat, edaCatTargetCatFeat,\

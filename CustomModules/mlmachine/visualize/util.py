@@ -5,8 +5,10 @@ import matplotlib.ticker as tkr
 
 def utilPlotBuffer(ax, x, y):
     """
-    Creates narrow border around plot arrow. 
-    Prevents plot icons from being clipped by plot edges.
+    Info:
+        Description:
+            Creates narrow border around plot arrow. 
+            Prevents plot icons from being clipped by plot edges.
     """
     xLim = ax.get_xlim()
     yLim = ax.get_ylim()
@@ -98,7 +100,9 @@ def utilLabelFormatter(ax, xUnits = None, yUnits = None, xSize = None, ySize = N
 
 def utilSetAxes(x, y, xThresh = 0.75, yThresh = 0.75):
     """
-    Dynamically set lower/upper limits of x/y axes.
+    Info:
+        Description:
+            Dynamically set lower/upper limits of x/y axes.
     """
     xMin = round(np.min(x), 5)
     xMax = round(np.max(x), 5)

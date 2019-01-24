@@ -20,8 +20,6 @@ from visualize import style
 from visualize.plotter import QuickPlot
 
 
-
-
 def edaCatTargetCatFeat(self):
     """
     Info:
@@ -73,8 +71,7 @@ def edaCatTargetCatFeat(self):
             # Display summary tables
             self.dfSideBySide(dfs = (uniSummDf, biSummDf, statTestDf), names = ['Univariate summary', 'Biivariate summary', 'Statistical test'])
         
-        else:
-            
+        else:            
             # Display summary tables
             self.dfSideBySide(dfs = (uniSummDf, biSummDf), names = ['Univariate summary', 'Biivariate summary'])
         
@@ -386,7 +383,6 @@ def dfSideBySide(self, dfs, names = []):
         Description:
 
         Parameters:
-    
     """
     html_str = ''
     if names:

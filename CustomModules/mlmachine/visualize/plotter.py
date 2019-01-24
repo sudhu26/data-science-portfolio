@@ -6,19 +6,12 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 
-sns.set_style('whitegrid')
-
 import sklearn.metrics as metrics
 import sklearn.preprocessing as prepocessing
 
 from statsmodels.stats.weightstats import ztest
 from statsmodels.stats.proportion import proportions_ztest
 from scipy import stats
-
-# import os
-# import sys
-# dir_path = os.path.dirname(os.path.realpath(__file__))
-# sys.path.append(dir_path)
 
 from visualize import style, util
 
@@ -317,7 +310,6 @@ class QuickPlot:
                 ax : Axes object, default = None
                     Axes object containing figure elements to be adjusted within `function.
         """
-        
         # If a Pandas DataFrame is passed to function, create x, y arrays using columns names passed into function.
         if df is not None:
             x = df[x].values
@@ -1006,7 +998,6 @@ class QuickPlot:
                     line color
                 ax : Axes object, default = None
                     Axes object containing figure elements to be adjusted within `function.
-
         """
         # Return prediction probabilities.
         probas = model.fit(xTrain, yTrain).predict_proba(xTest)
@@ -1123,3 +1114,5 @@ class QuickPlot:
 
     def qpResidualPlot(self):
         pass
+
+
