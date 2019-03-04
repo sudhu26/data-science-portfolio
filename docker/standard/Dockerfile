@@ -7,6 +7,9 @@ COPY requirements.txt /requirements
 RUN pip install pip --upgrade
 RUN pip install -r requirements.txt
 
+RUN pip uninstall tornado -y
+RUN pip install tornado==5.1.1
+
 # activate notebook extensions
 RUN jupyter contrib nbextension install --sys-prefix
 RUN jupyter nbextension enable snippets/main
