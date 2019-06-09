@@ -7,7 +7,7 @@ spark = SparkSession.builder.appName("Assignment4").getOrCreate()
 sc = spark.sparkContext
 
 # load data to dataframe
-path = 'fake_data.csv'
+path = './fake_data.csv'
 df = spark.read.format('csv').option('header','true').load(path)
 
 # cast income as an integer
