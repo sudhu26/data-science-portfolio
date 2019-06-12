@@ -1,3 +1,5 @@
+# this web scraping program compiles data from a baseball reference website
+
 import scrapy
 class PlayerInfo(scrapy.Item):
     name = scrapy.Field()
