@@ -1,0 +1,30 @@
+version: '3.7'
+
+networks:
+    spark-network:
+        driver: bridge
+        ipam:
+            driver: default
+
+services:
+    spark-master:
+        command: bash -c 'start-master.sh && tail -f /dev/null' 
+        container_name: spark-master
+        environment:
+            - SPARK_CONF_DIR=/conf
+        expose:
+            - ${SPARK_MASTER_WEBUI_PORT}
+            - ${SPARK_DRIVER_WEBUI_PORT}
+            - ${SPARK_MASTER_PORT}
+        hostname: ${SPARK_MASTER_HOST}
+        image: petersontylerd/spark-cluster:latest
+        networks:
+            - spark-network
+        ports:
+            - ${SPARK_MASTER_PORT}:${SPARK_MASTER_PORT}
+            - ${SPARK_MASTER_WEBUI_PORT}:${SPARK_MASTER_WEBUI_PORT}
+            - ${SPARK_DRIVER_WEBUI_PORT}:${SPARK_DRIVER_WEBUI_PORT}
+        volumes:
+            - app_history:/${SPARK_HISTORY_DIR}
+            - ./conf/master:/conf    
+    
