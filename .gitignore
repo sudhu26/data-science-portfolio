@@ -4,6 +4,7 @@
 .dot
 .vscode/*
 .txt
+.csv
 
 config.py
 
