@@ -2,6 +2,7 @@ version: '3.7'
 
 services:
     jupyter-home:
+        build: .
         command: bash -c 'jupyter notebook --no-browser --ip 0.0.0.0 --allow-root --port 8888' 
         container_name: jupyter-home
         expose:
@@ -9,9 +10,5 @@ services:
         image: petersontylerd/standard:latest
         ports:
             - 8888:8888
-        volume:
-            - ./:/home
-            - {the main dir for the portfolio}:/home
-
-#something about building the image if it's not there
-        
+        volumes:
+            - ../:/home
