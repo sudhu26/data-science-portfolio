@@ -10,7 +10,8 @@ services:
         ports:
             - 8888:8888
         volume:
+            - ./:/home
             - {the main dir for the portfolio}:/home
 
-something about building the image if it's not there
+#something about building the image if it's not there
         

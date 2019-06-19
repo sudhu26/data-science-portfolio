@@ -1,5 +1,18 @@
+FROM python:3.6.8-stretch
 
-FROM python:3.6.7
+RUN apt-get update && apt-get -y upgrade && apt-get install -y \
+    bash \
+    curl \
+    git \
+    nano \
+    net-tools \
+    software-properties-common \
+    ssh \
+    sudo \
+    tar \
+    tree \
+    wget
+RUN  apt-get clean
 
 WORKDIR /requirements
 COPY requirements.txt /requirements
@@ -30,5 +43,6 @@ RUN pip install -r requirements.txt
 #
 ADD . /home
 WORKDIR /home
+
 
 # CMD jupyter notebook --no-browser --ip 0.0.0.0 --allow-root --port 8888
