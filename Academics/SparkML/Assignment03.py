@@ -1,18 +1,14 @@
 # imports and tools
-from pyspark.ml import Pipeline
-from pyspark.ml.feature import MinMaxScaler, VectorAssembler
-from pyspark.ml.regression import LinearRegression
-from pyspark.sql import functions as F
 from pyspark.sql import SparkSession
 from pyspark.sql.types import IntegerType
-from pyspark.mllib.feature import HashingTF, IDF
+import pyspark.sql.functions as f
 
-from pyspark.ml.feature import CountVectorizer, IDF
-from pyspark.ml import Pipeline
+from pyspark.ml.feature import CountVectorizer
 
 import re
 import os
 import numpy as np
+import operator
 
 import matplotlib.pyplot as plt
 
@@ -21,7 +17,6 @@ spark = SparkSession.builder.appName("Assignment_03").getOrCreate()
 spark.sparkContext.setLogLevel("ERROR")
 sc = spark.sparkContext
 
-#https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/4574377819293972/2261876665858806/3186223000943570/latest.html
 ####################################################################################
 ## part 1
 # load data to dataframe
@@ -104,7 +99,7 @@ for x in dataGoogleTokens.take(5):
 ## part 3
 # 
 print('*' * 100)
-print('Part 3 - Return term frequency of a list of tokens using MLLIB TF functions\n')
+print('Part 3 - Return term frequency of a list of tokens\n')
 
 def termFreq(tokens, normalize = False):
     # capture term frequency for input token list
@@ -124,8 +119,8 @@ def termFreq(tokens, normalize = False):
 
 
 print('Google term frequency sample')
-googleTermFreq = dataGoogleTokens.map(lambda x: x[1]).map(termFreq)
-googleTermFreqNorm = dataGoogleTokens.map(lambda x: termFreq(x[1], normalize = True))
+googleTermFreq = dataGoogleTokens.map(lambda x: (x[0], termFreq(x[1], normalize = False)))
+googleTermFreqNorm = dataGoogleTokens.map(lambda x: (x[0], termFreq(x[1], normalize = True)))
 
 print('\nNot normalized')
 for x in googleTermFreq.take(5):
@@ -136,8 +131,8 @@ for x in googleTermFreqNorm.take(5):
 
 
 print('\nAmazon term frequency sample')
-amazonTermFreq = dataAmazonTokens.map(lambda x: x[1]).map(termFreq)
-amazonTermFreqNorm = dataAmazonTokens.map(lambda x: termFreq(x[1], normalize = True))
+amazonTermFreq = dataAmazonTokens.map(lambda x: (x[0], termFreq(x[1], normalize = False)))
+amazonTermFreqNorm = dataAmazonTokens.map(lambda x: (x[0], termFreq(x[1], normalize = True)))
 
 print('\nNot normalized')
 for x in amazonTermFreq.take(5):
@@ -166,17 +161,70 @@ corpusDf = corpus.toDF(['id','tokens'])
 ## part 5
 # 
 print('*' * 100)
-print('Part 5 - \n')
+print('Part 5 - Calculate IDFs and visualize lowest values \n')
 
-vectorizer = CountVectorizer(inputCol = 'tokens', outputCol = 'cv').fit(corpusDf)
-vectorized = vectorizer.transform(corpusDf)
 
-idf = IDF(inputCol='cv', outputCol="features", minDocFreq=5).fit(vectorized)
-idfed = idf.transform(vectorized)
+def calcIdf(corpus):
+    # get document count
+    docCount = corpusDf.agg(f.countDistinct('id'))
+    docCount = docCount.collect()[0][0]
+
+    # explode token vector
+    corpusDfExplode = (corpusDf.select('id','tokens',(f.explode('tokens').alias('indvToken'))))
+
+    # count number of IDs that include each word to get document frequency
+    docFreqs = corpusDfExplode.groupBy('indvToken').agg(f.countDistinct('id').alias('df')) 
+    docFreqs = docFreqs.sort(f.desc('df'))
+    
+    idfDf = docFreqs.withColumn('idf', docFreqs.df / docCount)
+    idfDf = docFreqs.withColumn('idf', f.log((docCount + 1) / (docFreqs.df + 1)))
+
+    idfRdd = idfDf.select('indvToken','idf').rdd 
+    return idfRdd 
+
+idfRdd = calcIdf(corpus = corpusDf)
+print('Five lowest IDF values')
+print(idfRdd.take(5))
+
+idfSubset = idfRdd.takeOrdered(10, key = lambda x: x[1])  
+idfSubset = [x[1] for x in idfSubset]
+plt.hist(idfSubset, bins = 5) 
+plt.xlabel('token')
+plt.ylabel('IDF')
+plt.savefig('LowestIDF.png')
 
 ####################################################################################
 ## part 6
 # 
 print('*' * 100)
-print('Part 6 - \n')
+print('Part 6 - Calculate term frequencies and TF-IDF \n')
 
+# 
+print('Part A - Calculate term frequencies')
+combinedTermFreq = amazonTermFreq.union(googleTermFreq)
+
+def tfidfFunc(corpus, idfs):
+    
+    # transform input corpus and IDFs into dictionaries
+    idfs = idfs.collectAsMap()
+    keyTFs = corpus.collectAsMap()  
+    
+    # for each document in the corpus
+    for key in keyTFs.keys():
+        
+        # for each token in the document
+        for token in keyTFs[key].keys():
+
+            # multiply the token's frequency by that term's IDF value
+            keyTFs[key][token] = keyTFs[key][token] * idfs[token]
+            
+    return keyTFs
+    
+idfDict = tfidfFunc(combinedTermFreq, idfRdd)
+
+print('Print first five items in idfDict, which is a dictionary where the key is the document ID and the value is an embedded dictionary containing the tokens and the corresponding TF-IDF values')
+idfDictFirstFive = {k: idfDict[k] for k in list(idfDict)[:5]}  
+
+for k in idfDictFirstFive.keys():
+    print(idfDictFirstFive[k])
+    print()
