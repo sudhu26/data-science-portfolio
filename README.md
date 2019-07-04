@@ -10,7 +10,7 @@ This portfolio intends to serve as a tangible representation of my passion for c
 
 ## Setup - use Docker
 ---
-While you are certainly welcome to simply clone this repository and do what you want with it, I recommend using using the repository [docker-portfolio-vm](https://github.com/petersontylerd/docker-portfolio-vm), which I created to facilitate easy interaction with my portfolio. 
+While you are certainly welcome to simply clone this repository and do what you want with it, I recommend using using the repository [docker-portfolio-vm](https://github.com/petersontylerd/docker-portfolio-vm), which I created to facilitate seamless interaction with my portfolio. 
 
 [docker-portfolio-vm](https://github.com/petersontylerd/docker-portfolio-vm) leverages Docker to create an environment that contains all dependencies needed to execute the notebooks and scripts. The Dockerfile sets up a Python environment, clones this portfolio repository, and installs all required Python packages. The Dockerfile also utilizes Git LFS (large file storage), which helps to avoid downloading data files until necessary.
 
@@ -22,7 +22,7 @@ Three steps is all it takes to get up and running:
 git clone https://github.com/petersontylerd/docker-portfolio-vm.git
 ```
 
-2. [docker-portfolio-vm](https://github.com/petersontylerd/docker-portfolio-vm) contains a docker-compose file, which makes it simple to create a container and launch a jupyter kernel for seemless exploration of the portfolio.
+2. [docker-portfolio-vm](https://github.com/petersontylerd/docker-portfolio-vm) contains a docker-compose file, which makes it simple to create a container and launch a jupyter kernel for seamless exploration of the portfolio.
 
 Create a container using docker-compose:
 
