@@ -66,9 +66,9 @@ Large-scale data science projects.
 
 Thorough dissection of textbooks and accompanying code sets. Emphasis placed on demonstrating mastery of key concepts by re-articulating key points and annotating, and often expanding upon, textbook code sets.
 
-  - [Python Machine Learning, 2nd Edition](https://github.com/Petersontylerd/DataSciencePortfolio/tree/master/AnnotatedTextWalkthroughs/PythonMachineLearning2ndEd) - Walkthrough of Sebastian Raschka's [https://www.oreilly.com/library/view/python-machine-learning/9781787125933/](textbook). 
+  - [Python Machine Learning, 2nd Edition](https://github.com/Petersontylerd/DataSciencePortfolio/tree/master/AnnotatedTextWalkthroughs/PythonMachineLearning2ndEd) - Walkthrough of Sebastian Raschka's [textbook](https://www.oreilly.com/library/view/python-machine-learning/9781787125933/). 
 
-  - [Deep Learning with PyTorch](https://github.com/petersontylerd/data-science-portfolio/tree/master/textbooks/DeepLearningWithPyTorch) - Walkthrough of Vishnu Subramanian's PyTorch [https://www.oreilly.com/library/view/deep-learning-with/9781788624336/](textbook). 
+  - [Deep Learning with PyTorch](https://github.com/petersontylerd/data-science-portfolio/tree/master/textbooks/DeepLearningWithPyTorch) - Walkthrough of Vishnu Subramanian's PyTorch [textbook](https://www.oreilly.com/library/view/deep-learning-with/9781788624336/). 
 
 
 ### tutorials
