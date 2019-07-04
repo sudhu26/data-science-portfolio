@@ -1,23 +1,44 @@
 # Data science portfolio
 ---
 Author: Tyler Peterson
-- [LinkedIn](https://www.linkedin.com/in/646541654618/)
-- [GitHub](https://www.github.com/)
+- [LinkedIn](https://www.linkedin.com/in/petersontylerd/)
+- [GitHub](https://github.com/petersontylerd)
+- [DockerHub](https://hub.docker.com/u/petersontylerd)
 - petersontylerd@gmail.com
 
-Purpose - On the surface, this portfolio showcases my data science work. More importantly, this serves as a historical record of my journey as I aspire to become a professional data scientist. My intention is not just to demonstrate what I can do, but make clear my passion for continuously developing my technical skills and knowledge of theory.
+This portfolio intends to serve as a tangible representation of my passion for continuously developing in the field of data science.
 
-_If you want to..._
+## Setup - use Docker
+---
+While you are certainly welcome to simply clone this repository and do what you want with it, I recommend using using the repository [docker-portfolio-vm](https://github.com/petersontylerd/docker-portfolio-vm), which I created to facilitate easy interaction with my portfolio. 
 
- _...evaluate my knowledge of theory_ - take a look at my annotated walkthrough of Sebastian Raschka's [Python Machine Learning, 2nd Edition](https://github.com/Petersontylerd/DataSciencePortfolio/tree/master/AnnotatedTextWalkthroughs/PythonMachineLearning2ndEd).  
+[docker-portfolio-vm](https://github.com/petersontylerd/docker-portfolio-vm) leverages Docker to create an environment that contains all dependencies needed to execute the notebooks and scripts. The Dockerfile sets up a Python environment, clones this portfolio repository, and installs all required Python packages. The Dockerfile also utilizes Git LFS (large file storage), which helps to avoid downloading data files until necessary.
 
- _...view a large-scale project_ - take a look at (_coming soon_)
+Three steps is all it takes to get up and running:
 
-Otherwise, this README is organized in a way to make it easy to browse my work and areas of exploration.
+1. Get [docker-portfolio-vm](https://github.com/petersontylerd/docker-portfolio-vm):
 
-Thanks for checking out my portfolio.
+```
+git clone https://github.com/petersontylerd/docker-portfolio-vm.git
+```
 
-## Sections
+2. [docker-portfolio-vm](https://github.com/petersontylerd/docker-portfolio-vm) contains a docker-compose file, which makes it simple to create a container and launch a jupyter kernel for seemless exploration of the portfolio.
+
+Create a container using docker-compose:
+
+```
+docker-compose up
+```
+
+This will also start the jupyter kernel. Notice the token in the URL - copy the alphanumerical string to the right of 'token=' in the URL
+
+3. Go to [localhost:8888](localhost:8888) in your browser
+
+In the text box next to 'Password or token:' at the top of the browser screen, paste in the token that was copied from the terminal.
+
+And that's it.
+
+## Portfolio Sections
 ---
 
 ### academics
@@ -26,12 +47,10 @@ Compilations of course work completed during Master of Data Science program at I
 
   - [Applied Machine Learning](https://github.com/Petersontylerd/DataSciencePortfolio/tree/master/Academics/AppliedMachineLearning) - Class taken during Summer 2018 session. Directory includes my term project, all required homework assignments, as well as all optional assignments and lab sessions.
 
-  - Spark
-
 
 ### kaggle
 
-description.
+Kaggle competitions.
 
  - (_coming soon_)
 
@@ -42,21 +61,19 @@ Large-scale data science projects.
 
  - (_coming soon_)
 
+
 ### textbooks
 
 Thorough dissection of textbooks and accompanying code sets. Emphasis placed on demonstrating mastery of key concepts by re-articulating key points and annotating, and often expanding upon, textbook code sets.
 
-  - [Python Machine Learning, 2nd Edition](https://github.com/Petersontylerd/DataSciencePortfolio/tree/master/AnnotatedTextWalkthroughs/PythonMachineLearning2ndEd) - Walkthrough of Sebastian Raschka's phenomenal textbook. All code examples were re-typed by me and annotated to reinforce my understanding.
+  - [Python Machine Learning, 2nd Edition](https://github.com/Petersontylerd/DataSciencePortfolio/tree/master/AnnotatedTextWalkthroughs/PythonMachineLearning2ndEd) - Walkthrough of Sebastian Raschka's [https://www.oreilly.com/library/view/python-machine-learning/9781787125933/](textbook). 
+
+  - [Deep Learning with PyTorch](https://github.com/petersontylerd/data-science-portfolio/tree/master/textbooks/DeepLearningWithPyTorch) - Walkthrough of Vishnu Subramanian's PyTorch [https://www.oreilly.com/library/view/deep-learning-with/9781788624336/](textbook). 
+
 
 ### tutorials
 
-Large-scale data science projects.
+Like most data science enthusiasts, I scour the internet for interesting tutorials. Here is a collection of some of my recent favorites.
 
  - (_coming soon_)
 
-## Setup
----
-
-### Docker
-
-In the docker directory, run docker-compose up. This will launch a jupyter notebook instance, mapped to port 8888.
