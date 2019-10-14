@@ -6,7 +6,7 @@ Author: Tyler Peterson
 - [DockerHub](https://hub.docker.com/u/petersontylerd)
 - petersontylerd@gmail.com
 
-This portfolio intends to serve as a tangible representation of my passion for continuously developing in the field of data science.
+This portfolio intends to serve as a tangible representation of my passion for numericly developing in the field of data science.
 
 ## Setup - use Docker
 ---
