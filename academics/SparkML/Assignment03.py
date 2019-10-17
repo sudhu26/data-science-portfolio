@@ -22,7 +22,7 @@ sc = spark.sparkContext
 # load data to dataframe
 print('*' * 100)
 print('Part 1 - load data into dataframe\n')
-path = '../../data/Amazon.csv'
+path = 's3://tdp-ml-datasets/misc/Amazon.csv'
 dataAmazon = spark.read.load(path , format = 'csv', header = 'true', inferschema = 'true', sep = ",")
 
 dataAmazonRDD = dataAmazon.rdd
@@ -33,7 +33,7 @@ print('\nAmazon\n')
 for x in dataAmazonRDD.take(5):
     print(x)
 
-path = '../../data/Google.csv'
+path = 's3://tdp-ml-datasets/misc/Google.csv'
 dataGoogle = spark.read.load(path , format = 'csv', header = 'true', inferschema = 'true', sep = ",")
 
 dataGoogleRDD = dataGoogle.rdd
@@ -53,7 +53,7 @@ print('Part 2 - Bag-of-words\n')
 print('*' * 50)
 print('Part 2a & 2b- implement function to return non-empty string and remove stopwords\n')
 
-path = '../../data/stopwords.txt' 
+path = 's3://tdp-ml-datasets/misc/stopwords.txt' 
 stopwords = sc.textFile(path).collect()
 
 quickbrownfox = 'A quick brown fox jumps over the lazy dog.'

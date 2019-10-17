@@ -30,7 +30,7 @@ print('Load data')
 print('*' * 100)
 print()
 
-path = '../../data/CreditCardDefault.csv'
+path = 's3://tdp-ml-datasets/misc/CreditCardDefault.csv'
 data = spark.read.load(path , format = 'csv', header = 'True', inferschema = 'true', sep = ",")
 
 # rename label column and drop ID columns
