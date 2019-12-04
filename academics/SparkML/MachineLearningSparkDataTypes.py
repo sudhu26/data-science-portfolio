@@ -75,7 +75,7 @@ rows = sc.parallelize([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
 mat = RowMatrix(rows)
 
 m = mat.numRows()
-n = mat.numCols()
+n = mat.num_cols()
 
 print(m)
 print(n)
@@ -109,7 +109,7 @@ entries = sc.parallelize([MatrixEntry(0, 0, 1.2)
 mat = CoordinateMatrix(entries)
 
 m = mat.numRows()
-n = mat.numCols()
+n = mat.num_cols()
 
 print(m)
 print(n)

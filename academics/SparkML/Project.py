@@ -189,8 +189,8 @@ evaluator = MulticlassClassificationEvaluator(labelCol = 'label'
                                               ,metricName = "accuracy"
                                               )
 
-accuracyTrain = evaluator.evaluate(trainPredsBasicLr)
-print('Training error: {:.9f}'.format(1.0 - accuracyTrain))
+accuracy_train = evaluator.evaluate(trainPredsBasicLr)
+print('Training error: {:.9f}'.format(1.0 - accuracy_train))
 accuracyValid = evaluator.evaluate(validationPredsBasicLr)
 print('Validation error: {:.9f}'.format(1.0 - accuracyValid))
 print()
@@ -292,8 +292,8 @@ evaluator = MulticlassClassificationEvaluator(labelCol = 'label'
                                               ,metricName = "accuracy"
                                               )
 
-accuracyTrain = evaluator.evaluate(trainPredsCvRf)
-print('Training error: {:.9f}'.format(1.0 - accuracyTrain))
+accuracy_train = evaluator.evaluate(trainPredsCvRf)
+print('Training error: {:.9f}'.format(1.0 - accuracy_train))
 accuracyValid = evaluator.evaluate(validationPredsCvRf)
 print('Validation error: {:.9f}'.format(1.0 - accuracyValid))
 print()
