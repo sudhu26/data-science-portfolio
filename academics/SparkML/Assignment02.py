@@ -36,21 +36,21 @@ data = data.withColumn('label', F.col('label') - labelMin)
 print(data.printSchema())
 
 # split dataset into train, validation and test sets
-(trainData, validationData, testData) = data.randomSplit([0.7, 0.1, 0.2], seed = 0)
-trainData.cache()
+(train_data, validationData, test_data) = data.randomSplit([0.7, 0.1, 0.2], seed = 0)
+train_data.cache()
 validationData.cache()
-testData.cache()
+test_data.cache()
 
-trainDataCount = trainData.count()
+train_dataCount = train_data.count()
 validationDataCount = validationData.count()
-testDataCount = testData.count()
+test_dataCount = test_data.count()
 
 print('Full dataset size: {}'.format(data.count()))
-print('Training dataset size: {}'.format(trainDataCount))
+print('Training dataset size: {}'.format(train_dataCount))
 print('Validation dataset size: {}'.format(validationDataCount))
-print('Test dataset size: {}'.format(testDataCount))
+print('Test dataset size: {}'.format(test_dataCount))
 
-print('Training + Validation + Test  = {}'.format(trainDataCount + validationDataCount + testDataCount))
+print('Training + Validation + Test  = {}'.format(train_dataCount + validationDataCount + test_dataCount))
 
 ####################################################################################
 ## part 2
@@ -63,18 +63,18 @@ minMaxScaler = MinMaxScaler(inputCol = 'unscaledFeatures', outputCol = 'features
 stages = [assembler, minMaxScaler]
 pipeline = Pipeline(stages = stages)
 
-procPipeline = pipeline.fit(trainData)
-trainData = procPipeline.transform(trainData)
+procPipeline = pipeline.fit(train_data)
+train_data = procPipeline.transform(train_data)
 validationData = procPipeline.transform(validationData)
-testData = procPipeline.transform(testData)
+test_data = procPipeline.transform(test_data)
 
-trainData = trainData.select('label','features')
+train_data = train_data.select('label','features')
 validationData = validationData.select('label','features')
-testData = testData.select('label','features')
+test_data = test_data.select('label','features')
 
 # train model and evaluate on validation data
 lr = LinearRegression(maxIter = 100)
-model = lr.fit(trainData)
+model = lr.fit(train_data)
 valPreds = model.transform(validationData)
 
 # evaluate
@@ -99,18 +99,18 @@ print('Part 3 - Visualize the log of the training error\n')
 from pyspark.mllib.linalg import Vectors as MLLibVectors
 from pyspark.mllib.regression import LabeledPoint, LinearRegressionWithSGD
 
-trainDataRDD = trainData.rdd
-trainDataRDD = trainDataRDD.map(lambda x: LabeledPoint(x[0], MLLibVectors.fromML(x[1])))
-trainDataRDD.persist()
+train_dataRDD = train_data.rdd
+train_dataRDD = train_dataRDD.map(lambda x: LabeledPoint(x[0], MLLibVectors.fromML(x[1])))
+train_dataRDD.persist()
 
 numIters = 50
 errors = []
 for i in range(1, numIters + 1):
-    model = LinearRegressionWithSGD.train(trainDataRDD
+    model = LinearRegressionWithSGD.train(train_dataRDD
                                           ,iterations = i
                                           ,step = 0.01
                                           )
-    valuesAndPredsTrain = trainDataRDD.map(lambda x: (x.label, model.predict(x.features)))   
+    valuesAndPredsTrain = train_dataRDD.map(lambda x: (x.label, model.predict(x.features)))   
     errors.append(rootMeanSquaredError(valuesAndPredsTrain))
     print(errors)
 
@@ -131,10 +131,10 @@ print('*' * 100)
 print('Part 4 - \n')
 
 # evaluate performance of model on test set
-testDataRDD = testData.rdd
-testDataRDD = testDataRDD.map(lambda x: LabeledPoint(x[0], MLLibVectors.fromML(x[1])))  
-testDataRDD.persist()
+test_dataRDD = test_data.rdd
+test_dataRDD = test_dataRDD.map(lambda x: LabeledPoint(x[0], MLLibVectors.fromML(x[1])))  
+test_dataRDD.persist()
 
-valuesAndPredsTest = testDataRDD.map(lambda x: (x.label, model.predict(x.features)))
+valuesAndPredsTest = test_dataRDD.map(lambda x: (x.label, model.predict(x.features)))
 print('Test RMSE: {}'.format(rootMeanSquaredError(valuesAndPredsTest)))
 

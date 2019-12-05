@@ -38,15 +38,15 @@ features = data.columns[1:-1]
 data = data.select(F.col('DEFAULT').alias('label'), *features)
 
 # split dataset into train and validation sets
-(trainData, validationData) = data.randomSplit([0.8, 0.2], seed = 0)
-trainData.cache()
+(train_data, validationData) = data.randomSplit([0.8, 0.2], seed = 0)
+train_data.cache()
 validationData.cache()
 
 # double check that the split performed as expected
 print('Full dataset size: {}'.format(data.count()))
-print('Training dataset size: {}'.format(trainData.count()))
+print('Training dataset size: {}'.format(train_data.count()))
 print('Validation dataset size: {}'.format(validationData.count()))
-print('Training + Validation = {}'.format(trainData.count() + validationData.count()))
+print('Training + Validation = {}'.format(train_data.count() + validationData.count()))
 
 
 ####################################################################################
@@ -86,10 +86,10 @@ stages = [assembler, minMaxScaler, lr]
 pipeline = Pipeline(stages = stages)
 
 # fit model using training data
-modelBasicLr = pipeline.fit(trainData)
+modelBasicLr = pipeline.fit(train_data)
 
 # generate predictions on both training data and validation data
-trainPredsBasicLr = modelBasicLr.transform(trainData)
+trainPredsBasicLr = modelBasicLr.transform(train_data)
 validationPredsBasicLr = modelBasicLr.transform(validationData)
 
 print('\n\n<<COMPLETE>>\n\n')
@@ -191,8 +191,8 @@ evaluator = MulticlassClassificationEvaluator(labelCol = 'label'
 
 accuracy_train = evaluator.evaluate(trainPredsBasicLr)
 print('Training error: {:.9f}'.format(1.0 - accuracy_train))
-accuracyValid = evaluator.evaluate(validationPredsBasicLr)
-print('Validation error: {:.9f}'.format(1.0 - accuracyValid))
+accuracy_valid = evaluator.evaluate(validationPredsBasicLr)
+print('Validation error: {:.9f}'.format(1.0 - accuracy_valid))
 print()
 
 
@@ -230,7 +230,7 @@ cv = CrossValidator(estimator = pipeline
     )
 
 # fit model using training data
-modelCvRf = cv.fit(trainData)
+modelCvRf = cv.fit(train_data)
 
 # display results
 params = [{p.name: v for p, v in m.items()} for m in modelCvRf.getEstimatorParamMaps()]
@@ -242,7 +242,7 @@ display(resultsCvRf)
 
 # generate predictions on both training data and validation data using best model
 bestModel = modelCvRf.bestModel
-trainPredsCvRf = bestModel.transform(trainData)
+trainPredsCvRf = bestModel.transform(train_data)
 validationPredsCvRf = bestModel.transform(validationData)
 
 print('\n\n<<COMPLETE>>\n\n')
@@ -294,6 +294,6 @@ evaluator = MulticlassClassificationEvaluator(labelCol = 'label'
 
 accuracy_train = evaluator.evaluate(trainPredsCvRf)
 print('Training error: {:.9f}'.format(1.0 - accuracy_train))
-accuracyValid = evaluator.evaluate(validationPredsCvRf)
-print('Validation error: {:.9f}'.format(1.0 - accuracyValid))
+accuracy_valid = evaluator.evaluate(validationPredsCvRf)
+print('Validation error: {:.9f}'.format(1.0 - accuracy_valid))
 print()

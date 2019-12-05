@@ -14,7 +14,7 @@ data = MLUtils.loadLibSVMFile(sc, '{}/data/mllib/sample_libsvm_data.txt'.format(
 data.take(1)
 
 # set aside test data
-(trainingData, testData) = data.randomSplit([0.7, 0.3])
+(trainingData, test_data) = data.randomSplit([0.7, 0.3])
 
 ## standard decicion tree
 # build decision tree model
@@ -27,11 +27,11 @@ model = DecisionTree.trainClassifier(trainingData
     )
 
 # prediction and test error
-predictions = model.predict(testData.map(lambda x: x.features))
-labelsAndPredictions = testData.map(lambda lp: lp.label).zip(predictions)
+predictions = model.predict(test_data.map(lambda x: x.features))
+labelsAndPredictions = test_data.map(lambda lp: lp.label).zip(predictions)
 
 # count incorrect
-testError = labelsAndPredictions.filter(lambda lp: lp[0] != lp[1]).count() / float(testData.count())
+testError = labelsAndPredictions.filter(lambda lp: lp[0] != lp[1]).count() / float(test_data.count())
 print('test error: {}'.format(testError))
 print(model.toDebugString())
 
@@ -55,11 +55,11 @@ model = RandomForest.trainClassifier(trainingData
     )
 
 # prediction and test error
-predictions = model.predict(testData.map(lambda x: x.features))
-labelsAndPredictions = testData.map(lambda lp: lp.label).zip(predictions)
+predictions = model.predict(test_data.map(lambda x: x.features))
+labelsAndPredictions = test_data.map(lambda lp: lp.label).zip(predictions)
 
 # count incorrect
-testError = labelsAndPredictions.filter(lambda lp: lp[0] != lp[1]).count() / float(testData.count())
+testError = labelsAndPredictions.filter(lambda lp: lp[0] != lp[1]).count() / float(test_data.count())
 print('test error: {}'.format(testError))
 print(model.toDebugString())
 

@@ -74,24 +74,24 @@ print('*' * 100)
 print('Part 4 - \n')
 
 # split dataset into train, validation and test sets
-(trainData, validationData, testData) = scaledData.randomSplit([0.7, 0.2, 0.1], seed = 0)
-trainData.cache()
+(train_data, validationData, test_data) = scaledData.randomSplit([0.7, 0.2, 0.1], seed = 0)
+train_data.cache()
 validationData.cache()
-testData.cache()
+test_data.cache()
 
-trainDataCount = trainData.count()
+train_dataCount = train_data.count()
 validationDataCount = validationData.count()
-testDataCount = testData.count()
+test_dataCount = test_data.count()
 
 print('Full dataset size: {}'.format(scaledData.count()))
-print('Training dataset size: {}'.format(trainDataCount))
+print('Training dataset size: {}'.format(train_dataCount))
 print('Validation dataset size: {}'.format(validationDataCount))
-print('Test dataset size: {}'.format(testDataCount))
+print('Test dataset size: {}'.format(test_dataCount))
 
-print('Training + Validation + Test  = {}'.format(trainDataCount + validationDataCount + testDataCount))
+print('Training + Validation + Test  = {}'.format(train_dataCount + validationDataCount + test_dataCount))
 
 # baseline model that returns average shifted year irrespective of the output
-baselineTrainYear = trainData.select(F.mean('label')).collect()[0][0]
+baselineTrainYear = train_data.select(F.mean('label')).collect()[0][0]
 print('Baseline model prediction: {}'.format(baselineTrainYear))
 
 # create functions that calculate root mean squared error
@@ -108,8 +108,8 @@ print('Perfect predictions: {}'.format(rootMeanSquaredError(perfectInput)))
 print('Imperfect predictions: {}'.format(rootMeanSquaredError(imperfectInput)))
 
 # measure performance using baseline model
-testDataRDD = testData.rdd
-labelPredPairsTest = testDataRDD.map(lambda x: (x.label, baselineTrainYear))
+test_dataRDD = test_data.rdd
+labelPredPairsTest = test_dataRDD.map(lambda x: (x.label, baselineTrainYear))
 print('Baseline performance (test): {}'.format(rootMeanSquaredError(labelPredPairsTest)))
 
 # ####################################################################################
