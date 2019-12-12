@@ -212,7 +212,7 @@ print()
 rf = RandomForestClassifier(featureSubsetStrategy = 'auto', impurity = 'gini')
 
 # parameter grid
-paramGrid = ParamGridBuilder() \
+param_grid = ParamGridBuilder() \
     .addGrid(rf.numTrees, [10, 15, 20, 25, 30, 40, 50]) \
     .addGrid(rf.maxDepth, [2, 3, 4, 5, 6, 7, 8]) \
     .addGrid(rf.maxBins, [16, 32, 48]) \
@@ -224,7 +224,7 @@ pipeline = Pipeline(stages = stages)
 
 # cross validator
 cv = CrossValidator(estimator = pipeline
-                    ,estimatorParamMaps = paramGrid
+                    ,estimatorParamMaps = param_grid
                     ,evaluator = BinaryClassificationEvaluator()
                     ,numFolds = 8
     )

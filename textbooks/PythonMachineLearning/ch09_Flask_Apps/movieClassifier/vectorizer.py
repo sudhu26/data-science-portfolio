@@ -3,10 +3,10 @@ import os
 import re
 import pickle
 
-curDir = os.path.dirname('__file__')
-stop = pickle.load(open(os.path.join(curDir,'ch09_Flask_Apps','movieClassifier','pkl_objects','stopwords.pkl'),'rb'))
+cur_dir = os.path.dirname('__file__')
+stop = pickle.load(open(os.path.join(cur_dir,'ch09_Flask_Apps','movieClassifier','pkl_objects','stopwords.pkl'),'rb'))
 
-def textProcessor(text):
+def text_processor(text):
     text = re.sub('<[^>]*>', '', text)
     emoticons = re.findall('(?::|;|=)(?:-)?(?:\)|\(|D|P)', text.lower())
     text = re.sub('[\W]+', ' ', text.lower()) + ' '.join(emoticons).replace('-', '')
@@ -16,4 +16,4 @@ def textProcessor(text):
 vect = feature_extraction.text.HashingVectorizer(decode_error = 'ignore'
                                                 ,n_features = 2**21
                                                 ,preprocessor = None
-                                                ,tokenizer = textProcessor)
+                                                ,tokenizer = text_processor)
