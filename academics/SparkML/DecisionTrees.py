@@ -20,7 +20,7 @@ data.take(1)
 # build decision tree model
 model = DecisionTree.trainClassifier(trainingData
                                     ,numClasses = 2
-                                    ,categoricalFeaturesInfo = {}
+                                    ,objectFeaturesInfo = {}
                                     ,impurity = 'gini'
                                     ,maxDepth = 5
                                     ,maxBins = 32
@@ -46,7 +46,7 @@ from pyspark.mllib.util import MLUtils
 # build model
 model = RandomForest.trainClassifier(trainingData
                                     ,numClasses = 2
-                                    ,categoricalFeaturesInfo = {}
+                                    ,objectFeaturesInfo = {}
                                     ,numTrees = 3
                                     ,featureSubsetStrategy = 'auto'
                                     ,impurity = 'gini'
