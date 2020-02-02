@@ -1,4 +1,4 @@
-import sklearn.feature_extraction as feature_extraction
+from sklearn.feature_extraction.text import CounterVectorizer, TfidfTransformer, TfidfVectorizer, HashingVectorizer
 import os
 import re
 import pickle
@@ -13,7 +13,7 @@ def text_processor(text):
     tokenized = [w for w in text.split() if w not in stop]
     return tokenized
 
-vect = feature_extraction.text.HashingVectorizer(decode_error = 'ignore'
+vect = HashingVectorizer(decode_error = 'ignore'
                                                 ,n_features = 2**21
                                                 ,preprocessor = None
                                                 ,tokenizer = text_processor)
